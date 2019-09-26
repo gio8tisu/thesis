@@ -38,7 +38,8 @@
 
 # README
 
-`make` to build `main.pdf` file (thesis document).  
+## Makefile
+`make all` to build `main.pdf` file (thesis document).  
 `make clean` to remove "garbage" files.
 
 ## LaTeX project divided into multiple files
