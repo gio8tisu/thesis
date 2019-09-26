@@ -34,3 +34,14 @@
 	* Experiments
 	* Histology Professionals Validation
 
+-----------------------------------------------
+
+# README
+
+`make` to build `main.pdf` (thesis document).  
+`make clean` to remove "garbage" files.
+
+## LaTeX project divided into multiple files
+Thesis main sections/chapters are divided into sub-directories and `main.tex` "grabs" them using subfiles package.  
+The document preamble and glossary are also in separate files (`preamble.sty` and `acronyms.tex`).  
+Bibliography is in BibTeX file (`refs.bib`).
