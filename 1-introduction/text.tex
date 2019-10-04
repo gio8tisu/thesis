@@ -1,7 +1,7 @@
 \documentclass[../main.tex]{subfiles}
 \begin{document}
 
-\subsection{Project Background}
+\subsection{Project background}
 \label{sec:project-background}
 
 In recent years, \gls{dl} has significantly improved the
@@ -12,8 +12,10 @@ and image-to-image translation.
 Image-to-image translation is the task of generating an image based on a
 given source image with different characteristics depending on the specific problem.
 
-In this work, the idea of image-to-image translation is applied
-to the transformation of \gls{cm} histological images into \gls{he} appearance.
+In this work, based on \cite{Combalia2019} work in the Dermatology Department
+from the Hospital Clínic de Barcelona, the idea of image-to-image translation
+is applied to the transformation of \gls{cm} histological images into
+\gls{he} appearance.
 
 \subsubsection{Confocal microscopy}
 \gls{cm} is an optical imaging technique for increasing optical resolution
@@ -39,6 +41,7 @@ by rapidly detecting carcinomas without conventional frozen histopathology
 Two different \gls{cm} modes exist, \gls{rcm} displays the backscattering signal
 of naturally occurring skin components, whereas \gls{fcm} provides contrast
 by using an applied fluorescent dye (\cite{Skvara2012}).
+See figure \ref{fig:CM-example} for an example.
 
 \begin{figure}[h]
 \centering
@@ -64,6 +67,7 @@ directly in the surgery room significantly reducing the time of complex
 surgical operations in skin cancer (\cite{Cinotti2018}),
 but the output largely differs from the standard \gls{he} slides that
 pathologists typically use to analyze tissue samples.
+See figure \ref{fig:HE-example} for a \gls{he} example.
 
 To bridge this gap, a method for combining the aforementioned modes of
 \gls{cm} into a H\&E-like image is presented in this work.
@@ -76,19 +80,19 @@ a parametric mapping function can be defined:
 	\tensor{DSCM}
 	= f_{\theta}(\tensor{R}, \tensor{F})
 \end{equation}
-where $\tensor{DSCM} \in \R{}^{3 \times H \times W}$ (stands for digitally-stained
+where $\tensor{DSCM} \in \R{}^{H \times W \times 3}$ (stands for digitally-stained
 \gls{cm}) represents the resulting H\&E-like RGB image,
-$\tensor{R} \in \R{}^{H \times W}$ and $\tensor{F} \in \R{}^{H \times W}$
+$\tensor{R}, \tensor{F} \in \R{}^{H \times W}$
 represent the reflectance and fluorescence modes (respectively) of the \gls{cm} input
 image with height $H$ and width $W$.
 
 \subsubsection{Affine transformation}
 \label{sec:affine-transformation}
 An affine transfomation is proposed in \cite{Gareau2009} for the function $f$
-where each channel ($c$) is computed as:
+where the RGB values for each pixel are computed as:
 \begin{equation} \label{eq:affine-transformation}
-	\tensor{DSCM}_{c,:} = \tensor{1}
-	- \tensor{F} (1 - \text{H}_c) - \tensor{R} (1 - \text{E}_c)
+	\tensor{DSCM}_{x,y} = \tensor{1}
+	- \text{F}_{x,y} (\tensor{1} - \tensor{H}) - \text{R}_{x,y} (\tensor{1} - \tensor{E})
 \end{equation}
 where:
 $$ \tensor{H} = \begin{bmatrix} 0.30 & 0.20 & 1 \end{bmatrix} $$
@@ -113,6 +117,7 @@ the color scheme differs from an actual \gls{he} sample.
   \centering
   \includegraphics[width=.8\linewidth]{HE}
   \caption{H\&E stained sample}
+  \label{fig:HE-example}
 \end{subfigure}
 \caption{Comparison between digital stain and H\&E stain}
 \label{fig:affine-example}
@@ -164,7 +169,7 @@ the Hospital Clínic de Barcelona.
 The work presented in this thesis is the natural continuation of the work presented
 in \cite{Combalia2019}...
 
-\subsection{Document Structure}
+\subsection{Document structure}
 In section \ref{sec:theoric-background} an overview of relevant \gls{dl} techniques and algorithms
 is presented to provide the reader a general knowledge of the field.
 
