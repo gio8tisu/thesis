@@ -195,7 +195,7 @@ title = {{Gradient-Based Learning Applied to Document Recognition}},
 volume = {86},
 year = {1998}
 }
-@inproceedings{Krizhevsky:2012:ICD:2999134.2999257,
+@inproceedings{Krizhevsky2012,
 address = {USA},
 author = {Krizhevsky, Alex and Sutskever, Ilya and Hinton, Geoffrey E},
 booktitle = {Proceedings of the 25th International Conference on Neural Information Processing Systems - Volume 1},
@@ -228,6 +228,29 @@ year = {2014}
 }
 
 % Optimization.
+@article{backprop,
+author = {{Rumelhart}, David E. and {Hinton}, Geoffrey E. and {Williams}, Ronald J.},
+title = "{Learning representations by back-propagating errors}",
+journal = {\nat},
+year = "1986",
+month = "Oct",
+volume = {323},
+number = {6088},
+pages = {533-536},
+doi = {10.1038/323533a0},
+adsurl = {https://ui.adsabs.harvard.edu/abs/1986Natur.323..533R},
+adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+@article{Srivastava2014,
+title={Dropout: a simple way to prevent neural networks from overfitting},
+author={Srivastava, Nitish and Hinton, Geoffrey and Krizhevsky, Alex and Sutskever, Ilya and Salakhutdinov, Ruslan},
+journal={The journal of machine learning research},
+volume={15},
+number={1},
+pages={1929--1958},
+year={2014},
+publisher={JMLR. org}
+}
 @misc{Hinton2012RMSProp,
 author = {Hinton, Geoffrey and Srivastava, Nitish and Swersky, Kevin},
 title = {Overview of mini-batch gradient descent},
@@ -256,7 +279,38 @@ author={Duchi, John and Hazan, Elad and Singer, Yoram},
 year={2011},
 journal={Journal of Machine Learning Research (JMLR)}
 }
-
+@article{Ioffe2015,
+author={Sergey Ioffe and Christian Szegedy},
+title={Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift},
+journal={CoRR},
+volume={abs/1502.03167},
+year={2015},
+url={http://arxiv.org/abs/1502.03167},
+archivePrefix={arXiv},
+eprint={1502.03167},
+timestamp={Mon, 13 Aug 2018 16:47:06 +0200},
+biburl={https://dblp.org/rec/bib/journals/corr/IoffeS15},
+bibsource={dblp computer science bibliography, https://dblp.org}
+}
+@inproceedings{Zhang2017No0,
+title={No . 067 April 4 , 2017 Theory of Deep Learning III : Generalization Properties of SGD by},
+author={Chiyuan Zhang and Qianli Liao and Alexander Rakhlin and Karthik Sridharan and Brando Miranda and Noah Golowich and Tomaso Poggio},
+year={2017}
+}
+@article{DBLP:journals/corr/abs-1804-07612,
+  author    = {Dominic Masters and
+               Carlo Luschi},
+  title     = {Revisiting Small Batch Training for Deep Neural Networks},
+  journal   = {CoRR},
+  volume    = {abs/1804.07612},
+  year      = {2018},
+  url       = {http://arxiv.org/abs/1804.07612},
+  archivePrefix = {arXiv},
+  eprint    = {1804.07612},
+  timestamp = {Mon, 13 Aug 2018 16:48:13 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/corr/abs-1804-07612},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
 % Dilated convolution.
 @article{Yu2015,
 abstract = {State-of-the-art models for semantic segmentation are based on adaptations of convolutional networks that had originally been designed for image classification. However, dense prediction and image classification are structurally different. In this work, we develop a new convolutional network module that is specifically designed for dense prediction. The presented module uses dilated convolutions to systematically aggregate multi-scale contextual information without losing resolution. The architecture is based on the fact that dilated convolutions support exponential expansion of the receptive field without loss of resolution or coverage. We show that the presented context module increases the accuracy of state-of-the-art semantic segmentation systems. In addition, we examine the adaptation of image classification networks to dense prediction and show that simplifying the adapted network can increase accuracy.},
@@ -476,7 +530,7 @@ doi = {10.1111/j.1524-4725.2004.30505.x}
 author = {Skvara, Hans and Plut, Ulrike and Schmid, Johannes A and Jonak, Constanze},
 year = {2012},
 pages = {3-12},
-title = {Combining in vivo reflectance with fluorescence confocal microscopy provides},
+title = {Combining in vivo reflectance with fluorescence confocal microscopy provides additive information on skin morphology},
 journal = {Dermatology Practical \& Conceptual},
 doi = {10.5826/dpc.0201a02}
 }
@@ -521,3 +575,24 @@ volume = {13},
 year = {2004}
 }
 
+% Deep belief networks
+@ARTICLE{Hinton2009,
+AUTHOR = {Hinton, G. E.},
+TITLE   = {{D}eep belief networks},
+YEAR    = {2009},
+JOURNAL = {Scholarpedia},
+VOLUME  = {4},
+NUMBER  = {5},
+PAGES   = {5947},
+DOI     = {10.4249/scholarpedia.5947},
+NOTE    = {revision \#91189}
+}
+% Variational autoencoders
+@misc{Kingma2013,
+title={Auto-Encoding Variational Bayes},
+author={Diederik P Kingma and Max Welling},
+year={2013},
+eprint={1312.6114},
+archivePrefix={arXiv},
+primaryClass={stat.ML}
+}
