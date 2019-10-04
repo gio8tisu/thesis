@@ -8,6 +8,8 @@
 \usetikzlibrary{arrows}
 \usepackage{xcolor}
 
+\usepackage[inline]{enumitem}
+
 \usepackage{caption}
 \usepackage{subcaption}
 
@@ -74,6 +76,8 @@ citestyle=authoryear
 
 %% Custom commands
 \newcommand{\cycleGAN}[2]{G_{#1 \rightarrow #2}}
-\makeatletter
 \newcommand{\tensor}[1]{\mathbf{#1}}
 \newcommand{\R}{\mathbb{R}}
+\DeclareMathOperator*{\argmax}{arg\!\max}
+\DeclareMathOperator*{\argmin}{arg\!\min}
+\newcommand{\iteration}[2]{#1^{(#2)}}
