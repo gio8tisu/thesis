@@ -134,14 +134,14 @@ the validation set for each of the final models are shown. The training
 process is done during 20 epochs using the Adam optimizer with a
 learning rate of \(10^{-3}\) and a batch size of 32 samples.
 
-<span>\*5c</span> Model & \(M\) & \(K\) & \(N\) & mean
-\(SSIM_{output}\)  
-Multiply (\(L = 1\)) & 3 & 32 & 5 & 0.877  
-Multiply (\(L = 1\)) & 5 & 64 & 5 & 0.728  
-Multiply (\(L = 5\)) & 5 & 64 & 5 & 0.947  
-Log-Add (\(L = 1\)) & 3 & 32 & 5 & 0.960  
-Log-Add (\(L = 1\)) & 5 & 64 & 5 & 0.806  
-Log-Add (\(L = 5\)) & 5 & 64 & 5 & 0.965  
+|       Model     |  M  |  K  |  N  | mean SSIM |
+| :-------------: | :-: | :-: | :-: | :-------: |
+|Multiply (L = 1) |  3  | 32  |  5  |   0.877   |
+|Multiply (L = 1) |  5  | 64  |  5  |   0.728   |
+|Multiply (L = 5) |  5  | 64  |  5  |   0.947   |
+| Log-Add (L = 1) |  3  | 32  |  5  |   0.960   |
+| Log-Add (L = 1) |  5  | 64  |  5  |   0.806   |
+| Log-Add (L = 5) |  5  | 64  |  5  |   0.965   |
 
 ## Staining network
 
