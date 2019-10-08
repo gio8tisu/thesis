@@ -46,12 +46,12 @@ provides contrast by using an applied fluorescent dye (). See figure
 
 ![Example of a CM micrograph of a skin tissue. Reflectance mode on the
 left and fluorescence mode on the
-right<span label="fig:CM-example"></span>](../images/R_crop_thumbnail.png)
+right<span label="fig:CM-example"></span>](../images/R_crop_thumbnail.jpg)
 <span id="fig:R-example" label="fig:R-example">\[fig:R-example\]</span>
 
 ![Example of a CM micrograph of a skin tissue. Reflectance mode on the
 left and fluorescence mode on the
-right<span label="fig:CM-example"></span>](../images/F_crop_thumbnail.png)
+right<span label="fig:CM-example"></span>](../images/F_crop_thumbnail.jpg)
 <span id="fig:F-example" label="fig:F-example">\[fig:F-example\]</span>
 
 ## Problem statement

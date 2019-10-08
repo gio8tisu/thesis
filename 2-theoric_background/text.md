@@ -286,7 +286,7 @@ will be unable to differentiate between the two distributions, i.e.
 
 ![<span data-acronym-label="gans" data-acronym-form="singular+short">gans</span>
 training process
-diagram<span label="fig:gan-diagram"></span>](GAN-diagram)
+diagram<span label="fig:gan-diagram"></span>](../images/GAN-diagram.png)
 
 This way of traning a generative model is unstable and can fail to
 converge due to a number of problems known as *failure modes*:

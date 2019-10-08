@@ -166,7 +166,7 @@ model<span label="fig:stain-baseline"></span>](../images/stain-baseline.png)
 
 ### Advanced <span data-acronym-label="dnn" data-acronym-form="singular+short">dnn</span>
 
-![<span label=""></span>](1038_real_A)
+![<span label=""></span>](../images/1038_real_A.png)
 
 The two architectures are trained using the hyperparameters described in
 table [\[tab:hyperparameters\]](#tab:hyperparameters) for tand instead
