@@ -124,10 +124,10 @@ because it fails to find any solution close to the desired.
 
 ![Learning curve or the division skip-connection model. \(SSIM_{input}\)
 is greater than \(SSIM_{output}\) throughout the trianing
-process<span label="fig:divide-learning-curve"></span>](divide-learning-curve)
+process<span label="fig:divide-learning-curve"></span>](../images/divide-learning-curve.png)
 
 ![Example of denoised
-<span data-acronym-label="fcm" data-acronym-form="singular+short">fcm</span><span label="fig:divide-denoised"></span>](divide-denoised)
+<span data-acronym-label="fcm" data-acronym-form="singular+short">fcm</span><span label="fig:divide-denoised"></span>](../images/divide-denoised.png)
 
 In table [\[tab:despeckling\]](#tab:despeckling) the mean SSIM values on
 the validation set for each of the final models are shown. The training
