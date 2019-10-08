@@ -17,26 +17,28 @@
 		- CycleGANs
 
 3. Methodology [here](3-methodology/text.md)
-	3.1 Despeckling network
 
-		* Speckle noise
-		* Proposed network architectures
+3.1 Despeckling network
 
-	3.2 Stain Network
+	* Speckle noise
+	* Proposed network architectures
 
-		* Proposed architecture
+3.2 Stain Network
+
+	* Proposed architecture
 
 4. Experiments and results [here](4-experiments_and_results/text.md)
 	
-	4.1 GAN PoC
-	4.2 Despeckling network
+4.1 GAN PoC
 
-		* Experiments
-		* Results
-	4.3 Stain network
+4.2 Despeckling network
 
-		* Experiments
-		* Results
+	* Experiments
+	* Results
+4.3 Stain network
+
+	* Experiments
+	* Results
 
 5. Result validation [here](5-conclusions_and_future_development/text.md)
 
