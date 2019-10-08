@@ -1,6 +1,6 @@
 # Index
 
-1. Introduction [here](1-introduction/text.md)
+### 1. Introduction [here](1-introduction/text.md)
 
 * Project Background
 * Need
@@ -8,7 +8,7 @@
 * Techniques
 * Work Structure
 
-2. Atificial Neural Networks [here](2-theoric_background/text.md)
+### 2. Atificial Neural Networks [here](2-theoric_background/text.md)
 
 * Convolutional Neural Networks (CNN)
 * Generative Adversarial Networks (GANs)
@@ -16,32 +16,32 @@
 	- Pix2Pix
 	- CycleGANs
 
-3. Methodology [here](3-methodology/text.md)
+### 3. Methodology [here](3-methodology/text.md)
 
-### Despeckling network
+#### Despeckling network
 
 * Speckle noise
 * Proposed network architectures
 
-### Stain Network
+#### Stain Network
 
 * Proposed architecture
 
-4. Experiments and results [here](4-experiments_and_results/text.md)
+### 4. Experiments and results [here](4-experiments_and_results/text.md)
 	
-### GAN PoC
+#### GAN PoC
 
-### Despeckling network
-
-* Experiments
-* Results
-
-### Stain network
+#### Despeckling network
 
 * Experiments
 * Results
 
-5. Result validation [here](5-conclusions_and_future_development/text.md)
+#### Stain network
+
+* Experiments
+* Results
+
+### 5. Result validation [here](5-conclusions_and_future_development/text.md)
 
 * Experiments
 * Histology Professionals Validation
