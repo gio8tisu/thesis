@@ -18,25 +18,25 @@
 
 3. Methodology [here](3-methodology/text.md)
 
-3.1 Despeckling network
+### Despeckling network
 
 * Speckle noise
 * Proposed network architectures
 
-3.2 Stain Network
+### Stain Network
 
 * Proposed architecture
 
 4. Experiments and results [here](4-experiments_and_results/text.md)
 	
-4.1 GAN PoC
+### GAN PoC
 
-4.2 Despeckling network
+### Despeckling network
 
 * Experiments
 * Results
 
-4.3 Stain network
+### Stain network
 
 * Experiments
 * Results
