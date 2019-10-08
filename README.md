@@ -10,12 +10,8 @@
 
 2. Atificial Neural Networks [here](2-theoric_background/text.md)
 
-	* Perceptron
-	* Multi-layer perceptron (MLP)
 	* Convolutional Neural Networks (CNN)
-		- Fully-convolutional Networks
 	* Generative Adversarial Networks (GANs)
-	* GANs Proof of Concept
 	* GANs for image-to-image translation
 		- Pix2Pix
 		- CycleGANs
