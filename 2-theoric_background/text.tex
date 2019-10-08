@@ -1,8 +1,6 @@
 \documentclass[../main.tex]{subfiles}
 \begin{document}
 
-\lipsum[1]
-
 \subsection{Artificial Neural Networks}
 \label{sec:artificial-neural-networks}
 
@@ -54,21 +52,24 @@ filters (commonly refered to as kernels by the \gls{dl} community) taking the
 previous layer's output as the input and then an element-wise
 non-linear function is applied to the output.
 The non-linearities allow the model to extract
-hierarchical features (in the case of image data, these are called featue maps)
+hierarchical features (early layers extract the called low-level features
+and deeper layers extract high-level features)
 from the input data as it is illustrated in figure
 \ref{fig:cnn-visualization} on page~\pageref{fig:cnn-visualization}
 extracted from \cite{Zeiler2014}.
 
 Down-sampling (also known as pooling in the \gls{dl} literature) is also a very
 common operation applied after some hidden layers, aimed to make the model
-tranlation-invariant. Three main methods can be used to represent the set of
+tranlation-invariant and reduce memory needs.
+Three main methods can be used to represent the set of
 $N$ (or $N \times N$) neighbouring samples with a single number:
 \begin{enumerate*}[label=\itshape\alph*\upshape)]
 \item Max-pooling uses the maximum value;
 \item The average value is used by the average-pooling method and
 \item Standard decimation ``takes'' a sample out of every $N$ samples,
-it is usually implemented via $N$-strided convolution to compute only the used
-values.
+it is usually implemented via $N$-strided (skipping $N - 1$ positions when
+sliding the filter) convolution to compute only the used values.
+\label{n-strided-conv}
 \end{enumerate*}
 
 Other kinds of layers like dropout (\cite{Srivastava2014})
@@ -93,9 +94,9 @@ projected down to pixel space using the ``deconvolutional'' network introduced i
 \label{fig:cnn-visualization}
 \end{figure}
 
-\subsubsection{Training \gls{ann}}
+\subsubsection{Training \gls{ann}}\label{sec:optimizers}
 Finding (or learning) the best set of parameters ($\theta$) (weights, filters,
-...) of a network for a given problem can be posed as an optmization problem by
+...) of a network for a given problem can be posed as an optimization problem by
 defining an appropiate objective function ($\mathcal{J}$).
 In a supervised setting, where training data composed by
 inputs (\textbf{X}) and targets (\textbf{Y}) is available:
@@ -108,31 +109,29 @@ inputs (\textbf{X}) and targets (\textbf{Y}) is available:
 The complex structure of \gls{ann} makes this optimization problem non-convex,
 hence iterative methods are used for moving towards an optimum solution;
 particulary, gradient descent based are the most common type as the networks
-are -by construction- fully-differentiable.
+are ---by construction--- fully-differentiable.
 
 The idea behind gradient descent is simple. Given a (random) initial value
 for the input variables (e.g., filter coefficients in the case of \gls{cnn}),
 these are updated by moving towards the direction with greater slope
 i.e., the gradient. Moving towards the direction of the gradient (gradient
-ascent) will yield a local maxima, useful when maximizing the objective
+ascent) will yield a local maximum, useful when maximizing the objective
 function; while moving toward the direction oposite to the gradient will
-yield a local minima:
-
+yield a local minimum:
 \begin{equation}\label{eq:gradient-descent}
 \iteration{\theta_i}{n} \leftarrow \iteration{\theta_i}{n - 1}
 - \mu \frac{\partial \mathcal{J}}{\partial \theta_i}
 \rvert_{\iteration{\theta_i}{n - 1}}
 \end{equation}
-
 where the superscript $(n)$ denotes the $n$-th iteration step and $\mu$
 (known as learning rate) controls how much the variables should change between
 steps. Note that the length of the ``step'' is not only governed by the
 learning rate but also by the magnitute of the gradient.
 
-In a \gls{dnn} with thousands or millions of parameters computing the gradient
-with respect to each parameter independently can be computationally restrictive.
+In a \gls{dnn} with thousands or millions of parameters, computing the gradient
+with respect to each parameter independently is computationally restrictive.
 In \cite{backprop} work, an algorithm to efficiently train \gls{ann}
-called backpropagation\footnotemark  which uses the principles of dynamic
+called backpropagation\footnotemark{}  which uses the principles of dynamic
 programming and exploits the chain rule was presented and it is how almost
 all \gls{ann} are trained nowadays.
 \footnotetext{This lead to the terminology of forward pass, when the output of
@@ -178,13 +177,13 @@ mathematical description of some problems is not always straightforward.
 
 \paragraph{Advanced gradient-based optimization methods}
 The basic (stochastic/mini-batch) gradient descent methods tend to find bad
-sub-optima when dealing with the noisy, non-convex landscape of \gls{ann},
+sub-optima when dealing with the noisy, non-convex landscape of \gls{ann};
 with a performance very sensitive to the initial values, learning rate and
-batch size; and slow training time.
+batch size.
 Many research work
 (\cite{Adagrad,Hinton2012RMSProp,Zeiler2012ADADELTA,Kingma2014Adam})
 has focused on this area, developing algorithms that try to
-find better local optima with fewer iterations. The one used in this work
+find better optima with fewer iterations. The one used in this work
 is the Adam ``optimizer'' (\cite{Kingma2014Adam}) which defines the following
 update rule based on adaptive estimates of gradient moments:
 
@@ -225,7 +224,7 @@ $1 - \beta_2$ (equation \ref{eq:adam-v}).
 The $\beta$'s are refered to as momentum an typical values lie
 around 0.9. $\epsilon$ is a very small constant (e.g, $10^{-8}$) to avoid
 division by zero.
-The intuition behind this update rule is that the size of the steps are forced
+The intuition behind this update rule is that the steps are forced
 to be of size $\mu$, as we are dividing by the magnitude of the gradient; and
 instead of taking the direction of the gradient at a given iteration step, the
 gradient value is passed through a low-pass filter to avoid making sudden changes
@@ -288,7 +287,7 @@ i.e. $D(x) = 0.5$.
 \begin{figure}[H]
 \centering
 \includegraphics[width=.7\linewidth]{GAN-diagram}
-\caption{}
+\caption{\gls{gans} training process diagram}
 \label{fig:gan-diagram}
 \end{figure}
 
@@ -311,6 +310,7 @@ very realistic samples as the constructed objective function essentially says
 ``generate samples that look realistic''.
 
 \subsubsection{GANs for image-to-image translation}
+\label{sec:gans-translation}
 
 In this section, two frameworks for image-to-image translation based on \gls{gans}
 are described. The first one, called pix2pix, (\cite{Isola2016}) uses a
@@ -342,7 +342,7 @@ loss function:
 L_G = \log(1 - D(\tensor{x}, G(\tensor{x}))) +
 \lambda \left\| \tensor{y} - G(\tensor{x}) \right\|_1
 \end{equation}
-\begin{figure}[H]
+\begin{figure}[t]
 \centering
 \includegraphics[width=.7\linewidth]{pix2pix-diagram}
 \caption{Training a conditional GAN to map edges to photo.
@@ -375,24 +375,38 @@ source image as input---) and tasking them to not only ``fool'' their
 discriminator but to also produce an image that is close to the original input
 when translated back to the source domain (using the complementary generator),
 this is done by defining the following losses for the generators
-(more clearly visualized in figure \ref{fig:cyclegan}:
+(more clearly visualized in figure \ref{fig:cyclegan}).\\
+An aditional term called
+idenity loss can be added to encourage the mapping to preserve color composition
+between the input and the output by making the generator be near an idenity
+mapping when samples from the target domain are provided.
+Note that the input and output domains need to have the same number of channels.\\ The final losses for the generators are the following:
 \begin{subequations}
 \begin{equation}
-L_{\cycleGAN{X}{Y}} = \log(1 - D_Y(\cycleGAN{X}{Y}(\tensor{x}))) +
-\lambda \left\| \tensor{x}
-- \cycleGAN{Y}{X}(\cycleGAN{X}{Y}(\tensor{x})) \right\|_1
+\begin{split}
+L_{\cycleGAN{X}{Y}} = &\log(1 - D_Y(\cycleGAN{X}{Y}(\tensor{x}))) \\
+&+ \lambda_{cycle} \left\| \tensor{x} -
+\cycleGAN{Y}{X}(\cycleGAN{X}{Y}(\tensor{x})) \right\|_1 \\
+&+ \lambda_{identity} \left\| \tensor{y} - \cycleGAN{X}{Y}(\tensor{y}) \right\|_1
+\end{split}
 \end{equation}
 \begin{equation}
-L_{\cycleGAN{Y}{X}} = \log(1 - D_X(\cycleGAN{Y}{X}(\tensor{y}))) +
-\lambda \left\| \tensor{y}
-- \cycleGAN{X}{Y}(\cycleGAN{Y}{X}(\tensor{y})) \right\|_1
+\begin{split}
+L_{\cycleGAN{Y}{X}} = &\log(1 - D_X(\cycleGAN{Y}{X}(\tensor{y}))) \\
+&+ \lambda_{cycle} \left\| \tensor{y}
+- \cycleGAN{X}{Y}(\cycleGAN{Y}{X}(\tensor{y})) \right\|_1 \\
+ &+\lambda_{identity} \left\| \tensor{x} - \cycleGAN{Y}{X}(\tensor{x}) \right\|_1
+\end{split}
 \end{equation}
 \end{subequations}
-\begin{figure}[H]
+\begin{figure}[b]
 \centering
-\includegraphics[width=.7\linewidth]{cyclegan-diagram}
-\caption{Extracted from \cite{Zhu2017a}}
+\includegraphics[width=.8\linewidth]{cyclegan-diagram}
+\caption{(Extracted from \cite{Zhu2017a}) The mapping model denoted as $\cycleGAN{X}{Y}$ in this work is is
+denoted in this figure as $G$ and $\cycleGAN{Y}{X}$ as $F$}
 \label{fig:cyclegan}
 \end{figure}
 
+Note that neither Pix2Pix nor CycleGAN generators use a noise distribution
+to generate samples (in contrast to the original \gls{gans} framework).
 \end{document}
