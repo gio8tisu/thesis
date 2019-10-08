@@ -3,16 +3,24 @@
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 
+\usepackage{float}
 \usepackage{graphicx}
 \usepackage{tikz}
 \usetikzlibrary{arrows}
 \usepackage{xcolor}
 
+% For displaying code
+\usepackage{verbatim}
+\usepackage{listings}
+
+% To inline enumeration
 \usepackage[inline]{enumitem}
 
+% For captioning figures and subfigures
 \usepackage{caption}
 \usepackage{subcaption}
 
+% Bibliography stuff
 \usepackage[
 backend=biber,
 style=authoryear,
@@ -29,12 +37,12 @@ citestyle=authoryear
 }
 
 \usepackage{csquotes}
+
+% For acronyms page
 \usepackage[acronym,nomain,nonumberlist]{glossaries}
 \loadglsentries{acronyms.tex}
 \makeglossaries
 
-\usepackage{float}
-\usepackage{verbatim}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{array}
@@ -43,9 +51,17 @@ citestyle=authoryear
 \usepackage{parskip}
 \usepackage{titlesec}
 
+% For working with separate files
 \usepackage{subfiles}
 
 \usepackage{lipsum}
+
+% Section number in equations and figures numbering
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+
+% To display figure above foot notes
+\usepackage[bottom]{footmisc}
 
 %% Page formatting
 \setlength{\parskip}{5mm}
