@@ -1,0 +1,1029 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
+\subsubsection{Datasets}\label{appendix:datasets}
+At the heart of PyTorch data loading utility is the
+\verb|torch.utils.data.DataLoader| class.
+It represents a Python iterable over a dataset.
+The most important argument of DataLoader constructor is dataset, which
+indicates a dataset object to load data from.
+PyTorch supports two different types of datasets:
+\begin{itemize}
+\item Map-style datasets,
+\item Iterable-style datasets.
+\end{itemize}
+In this project all datasets are map-style.
+A map-style dataset is one that implements the
+\verb|__getitem__()| and \verb|__len__()| protocols,
+and represents a map from (possibly non-integral) indices/keys to data samples.
+
+\begin{lstlisting}[language=Python]
+import os
+import pathlib
+from abc import ABCMeta, abstractmethod
+import warnings
+
+import torch.utils.data
+import pyvips
+from PIL import Image
+import openslide
+
+from transforms import VirtualStainer, MultiplicativeNoise
+
+
+def return_prefix_decorator(getitem):
+    """Used to wrap __getitem__ method.
+
+    If return_prefix attribute is True, it will make
+    __getitem__ return the desired item along with its file
+    prefix using _get_prefix method
+    (this can be used to identify the samples).
+    """
+    def getitem_wrapper(self, item):
+        sample = getitem(self, item)
+        if self.return_prefix:
+            prefix = self.get_prefix(item)
+            return sample, prefix
+        else:
+            return sample
+    return getitem_wrapper
+
+
+class CMDataset(torch.utils.data.Dataset, metaclass=ABCMeta):
+    """CM scans dataset abstract class with possibility
+    to (linearly) stain."""
+    def __init__(self, transform=None,
+                 only_R=False, only_F=False, stain=False,
+		 transform_stained=None,
+		 transform_F=None, transform_R=None,
+                 return_prefix=False):
+        """
+        Args:
+            only_R (bool): return only R mode.
+            only_F (bool): return only F mode.
+		If both only_R and only_F are True,
+                the former takes precedence.
+            stain (bool): Stain CM image using VirtualStainer.
+            transform_stained: Apply transform to stained image.
+            transform_F: Apply transform to F-mode image.
+            transform_R: Apply transform to R-mode image.
+            transform (callable): Apply transform to both modes
+		(after respective transforms).
+                R and F modes will be used as argument
+		in that order.
+        """
+        if only_R and only_F:
+            raise ValueError("Only one (if any) of 'only'"
+	    		     "options must be true.")
+        self.only_R, self.only_F = only_R, only_F
+        self.transform_stained = transform_stained
+        self.transform_F = transform_F
+        self.transform_R = transform_R
+        self.transform = transform
+        self.scans = self._list_scans()
+        self.stainer = VirtualStainer() if stain else None
+        self.return_prefix = return_prefix
+
+    def __len__(self):
+        return len(self.scans)
+
+    @abstractmethod
+    def get_f(self, item):
+        """Return item-th sample F mode."""
+        pass
+
+    @abstractmethod
+    def get_r(self, item):
+        """Return item-th sample R mode."""
+        pass
+
+    @abstractmethod
+    def get_prefix(self, item):
+        """Return item-th sample prefix."""
+        pass
+
+    @abstractmethod
+    def _list_scans(self):
+        pass
+
+    @return_prefix_decorator
+    def __getitem__(self, item):
+        """Get CM image.
+
+        If stain, return stained image
+	(using transforms.VirtualStainer).
+        Return both modes otherwise.
+        If return_prefix, return (sample, prefix) tuple.
+        """
+        # load R mode if needed
+        r_img = None if self.only_F else self.get_r(item)
+        # load F mode if needed
+        f_img = None if self.only_R else self.get_f(item)
+
+        if self.transform_F:
+            f_img = self.transform_F(f_img)
+        if self.transform_R:
+            r_img = self.transform_R(r_img)
+
+        if self.transform:
+            r_img, f_img = self.transform(r_img, f_img)
+
+        if self.stainer:
+            img = self.stainer(r_img, f_img)
+            if self.transform_stained:
+                return self.transform_stained(img)
+            return img
+
+        if self.only_R:
+            return r_img
+        elif self.only_F:
+            return f_img
+        return {'F': f_img, 'R': r_img}
+
+
+class ColonCMDataset(CMDataset):
+    """CM colon scans dataset with possibility to stain.
+
+    785: R
+    488: F
+    """
+
+    def __init__(self, root_dir, **kwargs):
+        self.root_dir = pathlib.Path(root_dir)
+        super().__init__(**kwargs)
+
+    def _list_scans(self):
+        scans_R = list(self.root_dir.glob('**/785.png'))
+        scans_F = list(self.root_dir.glob('**/488.png'))
+        assert len(scans_F) == len(scans_R)
+        # list of (R,F) pairs, needs to be list so it has len().
+        scans = list(zip(sorted(scans_R), sorted(scans_F)))
+
+        return scans
+
+    def get_f(self, item):
+	# second element of tuple is F mode
+        f_file = self.scans[item][1]
+        f_img = pyvips.Image.new_from_file(str(f_file))
+        return f_img
+
+    def get_r(self, item):
+	# first element of tuple is R mode
+        r_file = self.scans[item][0]
+        r_img = pyvips.Image.new_from_file(str(r_file))
+        return r_img
+
+    def get_prefix(self, item):
+        return self.scans[item][0][:-8]
+
+
+class ColonHEDataset(torch.utils.data.Dataset):
+    """H&E colon scans dataset."""
+
+    def __init__(self, root_dir, transform=None, alpha=False):
+        """
+        Args:
+            root_dir (str): Directory with mosaic directories.
+            transform (callable): Apply transform to image.
+            alpha (bool): return slide with alpha channel.
+        """
+        self.root_dir = pathlib.Path(root_dir)
+        self.transform = transform
+        self.alpha = alpha
+        self.scans = sorted(list(self.root_dir.glob('*.bif')))
+
+    def __len__(self):
+        return len(self.scans)
+
+    def __getitem__(self, item):
+        """Get max resolution H&E image.
+
+        :return openslide.OpenSlide object
+        """
+        scan = openslide.OpenSlide(str(self.scans[item]))
+        if self.alpha:
+            return scan
+        if self.transform:
+            scan = self.transform(scan)
+        return scan
+
+
+class SkinCMDataset(CMDataset):
+    """CM skin scans dataset with possibility to stain.
+
+    DET#1: R
+    DET#2: F
+    """
+
+    def __init__(self, root_dir, **kwargs):
+        self.root_dir = root_dir
+        super().__init__(**kwargs)
+
+    def _list_scans(self):
+        scans = []
+        for root, dirs, files in os.walk(self.root_dir):
+            if 'mosaic' in root.split('/')[-1]:
+                scans.append(root)
+
+        scans = sorted(list(set(scans)))
+        return scans
+
+    def get_f(self, item):
+        f_file = self.scans[item] + '/DET#2/highres_raw.tif'
+        f_img = pyvips.Image.new_from_file(
+			f_file, access='random')
+        return f_img
+
+    def get_r(self, item):
+        r_file = self.scans[item] + '/DET#1/highres_raw.tif'
+        r_img = pyvips.Image.new_from_file(
+			r_file, access='random')
+        return r_img
+
+    def get_prefix(self, item):
+        return self.scans[item]
+
+
+class CMCropsDataset(CMDataset):
+    """CM scans crops dataset with possibility to stain.
+
+    To extract crops from wholeslides use save_crops.py script.
+    """
+
+    def __init__(self, root_dir, **kwargs):
+        self.root_dir = pathlib.Path(root_dir)
+        super().__init__(**kwargs)
+
+    def _list_scans(self):
+        crops_R = {str(r)[:-6]
+                   for r in self.root_dir.glob('*R.tif')}
+        crops_F = {str(f)[:-6]
+                   for f in self.root_dir.glob('*F.tif')}
+        if self.only_R:
+            crops = crops_R
+        elif self.only_F:
+            crops = crops_F
+        else:
+            # if use both modes,
+	    # use only the crops with both modes available.
+            if len(crops_F) != len(crops_R):
+                warnings.warn(
+			'Number of crops for R and F modes '
+			'are different. Dataset will be only '
+			'composed by the images with '
+			'both modes available.')
+            crops = crops_R & crops_F  # set intersection.
+        return sorted(crops)
+
+    def get_f(self, item):
+        f_file = self.scans[item] + '_F.tif'
+        f_img = Image.open(f_file)
+        return f_img
+
+    def get_r(self, item):
+        r_file = self.scans[item] + '_R.tif'
+        r_img = Image.open(r_file)
+        return r_img
+
+    def get_prefix(self, item):
+        return os.path.basename(self.scans[item])
+
+
+class NoisyCMCropsDataset(CMCropsDataset):
+    """Dataset with 512x512 CM crops with speckle noise."""
+
+    def __init__(self, root_dir, mode, noise_args,
+                 transform=None, return_prefix=False):
+        """
+
+        :param root_dir: Directory with "mosaic" directories.
+        :param mode: which mode to work with (F or R).
+        :param noise_args: dict with random_variable and
+		parameter keys.
+        """
+        if mode == 'F':
+            super().__init__(
+                root_dir, only_F=True, transform_F=transform,
+                return_prefix=return_prefix)
+        elif mode == 'R':
+            super().__init__(
+                root_dir, only_R=True, transform_R=transform,
+                return_prefix=return_prefix)
+        else:
+            raise ValueError(
+	    	"'mode' parameter should be 'F' or 'R'")
+        self.add_noise = MultiplicativeNoise(**noise_args)
+
+    def __getitem__(self, item):
+        """Return (noisy, clean) tuple.
+
+        If return_prefix, return ((noisy, clean), prefix)
+        Return (noisy, clean) otherwise.
+        """
+        clean = super().__getitem__(item)
+        if self.return_prefix:
+            clean, prefix = clean
+        noisy = self.add_noise(clean)
+        if self.return_prefix:
+            return (noisy, clean), prefix
+        return noisy, clean
+
+
+class SimpleDataset(torch.utils.data.Dataset):
+    EXTENSIONS = ['.png', '.jpg', '.tif']
+
+    def __init__(self, root_dir, transform=None,
+                 return_prefix=False):
+        self.root_dir = pathlib.Path(root_dir)
+        self.files = [file for file in self.root_dir.glob('*.*')
+                      if file.suffix in self.EXTENSIONS]
+
+        self.transform = transform
+        self.return_prefix = return_prefix
+
+    @return_prefix_decorator
+    def __getitem__(self, item):
+        img = Image.open(self.files[item])
+        if self.transform:
+            img = self.transform(img)
+        return img
+
+    def __len__(self):
+        return len(self.files)
+
+    def get_prefix(self, item):
+        return os.path.basename(self.files[item])
+
+class UnalignedCM2HEDataset(torch.utils.data.Dataset):
+    def __init__(self, cm_root, he_root,
+        transform_cm=None, transform_he=None):
+        self.cm_dataset = CMCropsDataset(
+		cm_root, transform=transform_cm)
+        self.he_dataset = SimpleDataset(
+		he_root, transform=transform_he)
+
+        self.cm_to_tensor = CMToTensor()
+        self.he_to_tensor = torchvision.transforms.ToTensor()
+
+    def __getitem__(self, item):
+        cm = self.cm_dataset[item % len(self.cm_dataset)]
+        cm = self.cm_to_tensor(cm['R'], cm['F'])
+        he = self.he_dataset[
+		random.randrange(len(self.he_dataset))]
+        he = self.he_to_tensor(he)
+
+        return {'CM': cm, 'HE': he}
+
+    def __len__(self):
+        return max(len(self.cm_dataset), len(self.he_dataset))
+
+\end{lstlisting}
+
+\subsubsection{Transforms}
+Some useful object oriented transformations are defined in a similar way
+to the ones defined in \verb|torchvision.transforms| package.
+
+\begin{lstlisting}
+import random
+
+import pyvips
+import numpy as np
+import torch
+import torchvision.transforms.functional as TF
+
+
+class VirtualStainer:
+    """Class for digitally staining CM to H&E histology
+    using Daniel S. Gareau technique."""
+
+    H = [0.30, 0.20, 1]
+    one_minus_H = list(map(lambda x: 1 - x, H))
+    E = [1, 0.55, 0.88]
+    one_minus_E = list(map(lambda x: 1 - x, E))
+
+    def __call__(self, sample_R, sample_F):
+        """Apply staining transformation and return pyvips image.
+
+        sample_R: pyvips.Image or numpy array with range [0,1]
+        sample_F: pyvips.Image or numpy array with range [0,1]
+        """
+        if (isinstance(sample_F, pyvips.Image)
+                and isinstance(sample_R, pyvips.Image)):
+            f_res = sample_F * self.one_minus_H
+            r_res = sample_R * self.one_minus_E
+
+            image = 1 - f_res - r_res
+	    res = image.copy(
+	    	interpretation=pyvips.enums.Interpretation.RGB)
+            return res
+
+        # assumes sample_F and sample_R are numpy arrays
+        f_res = sample_F * np.array(
+		self.one_minus_H).reshape((3, 1, 1))
+        r_res = sample_R * np.array(
+		self.one_minus_E).reshape((3, 1, 1))
+
+        return 1 - f_res - r_res
+
+
+class MultiplicativeNoise:
+    """Multiply by random variable."""
+
+    def __init__(self, random_variable, **parameters):
+        """
+
+        random_variable: numpy.random distribution function.
+        """
+        self.random_variable = random_variable
+        self.parameters = parameters
+
+    def __call__(self, img):
+        """return clean image and contaminated image."""
+        noise = torch.tensor(
+            self.random_variable(size=img.size(),
+	                         **self.parameters),
+            device=img.device, dtype=img.dtype,
+	    requires_grad=False
+        )
+        return img * noise, img
+
+
+class CMMinMaxNormalizer:
+    """Min-max normalize CM sample with different methods.
+
+    Independent method "min-max" normalizes each mode
+	    separately.
+    Global method "min-max" normalizes with global min and
+	    max values.
+    Average method "min-max" normalizes with min and max
+	    values of the average image.
+    """
+
+    def __init__(self, method):
+        assert method in ('independent', 'global', 'average')
+        self.method = method
+
+    def __call__(self, sample_R, sample_F):
+        if self.method == 'independent':
+            new_R = self._normalize(sample_R)
+            new_F = self._normalize(sample_F)
+        elif self.method == 'global':
+            # compute min and max values.
+            min_R, max_R = sample_R.min(), sample_R.max()
+            min_F, max_F = sample_F.min(), sample_F.max()
+            # get global min and max.
+            min_ = min_R if min_R > min_F else min_F
+            max_ = max_R if max_R > max_F else max_F
+            # normalize with global min and max.
+            new_R = self._normalize(sample_R, min_, max_)
+            new_F = self._normalize(sample_F, min_, max_)
+        else:  # self.method == average
+            avg = (sample_R + sample_F) / 2
+            min_ = avg.min()
+            max_ = avg.max()
+            new_R = self._normalize(sample_R, min_, max_)
+            new_F = self._normalize(sample_F, min_, max_)
+        return new_R, new_F
+
+    @staticmethod
+    def _normalize(img, min_=None, max_=None):
+        """Normalize pyvips.Image by min and max."""
+        if min_ is None:
+            min_ = img.min()
+        if max_ is None:
+            max_ = img.max()
+        return (img - min_) / (max_ - min_)
+
+
+class CMRandomCrop:
+
+    def __init__(self, height, width):
+        self.height = height
+        self.width = width
+
+    def __call__(self, R, F):
+        r_height, r_width = R.size
+        f_height, f_width = F.size
+        assert r_height == f_height
+        assert r_width == f_width
+        rand_i = random.randrange(r_height - self.height)
+        rand_j = random.randrange(r_width - self.width)
+
+        R = TF.crop(R, rand_i, rand_j,
+	            self.height, self.width)
+        F = TF.crop(F, rand_i, rand_j,
+	            self.height, self.width)
+        return R, F
+
+
+class CMRandomHorizontalFlip:
+
+    def __call__(self, R, F):
+        if random.random() > 0.5:
+            R = TF.hflip(R)
+            F = TF.hflip(F)
+        return R, F
+
+
+class CMRandomVerticalFlip:
+
+    def __call__(self, R, F):
+        if random.random() > 0.5:
+            R = TF.vflip(R)
+            F = TF.vflip(F)
+        return R, F
+
+
+class CMToTensor:
+
+    def __call__(self, R, F):
+        R = TF.to_tensor(R)
+        F = TF.to_tensor(F)
+        return torch.cat((R, F))
+
+
+class CMCompose:
+    """Composes several transforms together."""
+
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def __call__(self, R, F):
+        for t in self.transforms:
+            R, F = t(R, F)
+        return R, F
+
+\end{lstlisting}
+
+\subsubsection{Models}
+PyTorch models are implemented by subclassing the \verb|torch.nn.Module|
+abstract class which defines the abstract method \verb|forward| that
+should implement the forward pass of the model.
+The backward pass is performed by a \verb|torch.optim.Optimizer| subclasses
+which make use of the PyTorch's automatic differentiation system "autograd".
+\verb|torch.nnModule| subclasses can in turn contain other \verb|torch.nn.Module|
+objects, this is how layers are usually defined.
+
+\subsubsection*{Despeckling models}\label{appendix:despeckling}
+\begin{lstlisting}
+
+import torch.nn as nn
+import torch
+
+SAFE_LOG_EPSILON = 1E-5  # small number to avoid log(0).
+SAFE_DIV_EPSILON = 1E-8  # small number to avoid division by zero.
+
+
+class ResModel(nn.Module):
+    """Model with residual/skip connection."""
+
+    def __init__(self, sub_module,
+                 skip_connection=lambda x, y: x + y):
+        """
+
+        :param sub_module: model between input and
+		skip connection.
+        :param skip_connection: operation to do in
+		skip connection.
+        """
+        super(ResModel, self).__init__()
+
+        self.skip_connection = skip_connection
+
+        self.noise_removal_block = sub_module
+
+    def forward(self, x):
+        clean = self.skip_connection(
+		x, self.noise_removal_block(x))
+
+        return clean
+
+
+class BasicConv(nn.Module):
+    """Series of convolution layers keeping the
+    same image shape."""
+
+    def __init__(self, in_channels=1, n_layers=6,
+                 n_filters=64, kernel_size=3):
+        super(BasicConv, self).__init__()
+        model = [nn.Sequential(nn.Conv2d(in_channels,
+	                                 n_filters,
+					 kernel_size,
+                                         padding=kernel_size // 2),
+                               nn.BatchNorm2d(n_filters),
+                               nn.PReLU())
+                 ]
+        for _ in range(n_layers - 1):
+            model += [nn.Sequential(nn.Conv2d(n_filters,
+	                                      n_filters,
+					      kernel_size,
+                                              kernel_size // 2),
+                                    nn.BatchNorm2d(n_filters),
+                                    nn.PReLU())
+                      ]
+        model += [nn.Conv2d(n_filters, in_channels, 1)]
+        self.model = nn.Sequential(*model)
+
+    def forward(self, x):
+        return self.model(x)
+
+
+class DilatedConv(nn.Module):
+    """Series of convolution layers with dilation
+    2 keeping the same image shape."""
+
+    def __init__(self, in_channels=1, n_layers=6,
+                 n_filters=64, kernel_size=3):
+        super(DilatedConv, self).__init__()
+        model = [nn.Sequential(nn.Conv2d(in_channels,
+	                                 n_filters,
+					 kernel_size,
+                                         kernel_size // 2 * 2,
+					 dilation=2),
+                               nn.BatchNorm2d(n_filters),
+                               nn.PReLU())
+                 ]
+        for _ in range(n_layers - 1):
+            model += [nn.Sequential(nn.Conv2d(
+	                                n_filters,
+	                                n_filters,
+					kernel_size,
+                                        kernel_size // 2 * 2,
+					dilation=2),
+                                    nn.BatchNorm2d(n_filters),
+                                    nn.PReLU())
+                      ]
+        model += [nn.Conv2d(n_filters, in_channels, 1)]
+        self.model = nn.Sequential(*model)
+
+    def forward(self, x):
+        return self.model(x)
+
+
+class LogAddDespeckle(nn.Module):
+    """Apply log to pixel values, residual block with
+    addition, apply exponential."""
+
+    def __init__(self, n_layers=6, n_filters=64,
+                 kernel_size=3, apply_sigmoid=True):
+        super(LogAddDespeckle, self).__init__()
+        conv = BasicConv(in_channels=1, n_layers=n_layers,
+	                 n_filters=n_filters,
+			 kernel_size=kernel_size)
+        self.remove_noise = ResModel(
+	    conv, skip_connection=lambda x, y: x + y)
+        self.apply_sigmoid = apply_sigmoid
+
+    def forward(self, x):
+        log_x = (x + SAFE_LOG_EPSILON).log()
+        clean_log_x = self.remove_noise(log_x)
+        clean_x = clean_log_x.exp()
+        if self.apply_sigmoid:
+            return torch.sigmoid(clean_x)
+        return clean_x
+
+
+class DilatedLogAddDespeckle(nn.Module):
+    """Apply log to pixel values, residual block with addition,
+    apply exponential."""
+
+    def __init__(self, n_layers=6, n_filters=64,
+                 kernel_size=3, apply_sigmoid=True):
+        super(DilatedLogAddDespeckle, self).__init__()
+        conv = DilatedConv(in_channels=1, n_layers=n_layers,
+	                   n_filters=n_filters,
+                           kernel_size=kernel_size)
+        self.remove_noise = ResModel(
+        	conv, skip_connection=lambda x, y: x + y)
+        self.apply_sigmoid = apply_sigmoid
+
+    def forward(self, x):
+        log_x = (x + SAFE_LOG_EPSILON).log()
+        clean_log_x = self.remove_noise(log_x)
+        clean_x = clean_log_x.exp()
+        if self.apply_sigmoid:
+            return torch.sigmoid(clean_x)
+        return clean_x
+
+
+class LogSubtractDespeckle(nn.Module):
+    """Apply log to pixel values, residual block with
+    subtraction, apply exponential."""
+
+    def __init__(self, n_layers=6, n_filters=64,
+                 kernel_size=3, apply_sigmoid=True):
+        super(LogSubtractDespeckle, self).__init__()
+        conv = BasicConv(in_channels=1, n_layers=n_layers,
+	                 n_filters=n_filters,
+                         kernel_size=kernel_size)
+        self.remove_noise = ResModel(
+	    conv, skip_connection=lambda x, y: x - y)
+        self.apply_sigmoid = apply_sigmoid
+
+    def forward(self, x):
+        log_x = (x + SAFE_LOG_EPSILON).log()
+        clean_log_x = self.remove_noise(log_x)
+        clean_x = clean_log_x.exp()
+        if self.apply_sigmoid:
+            return torch.sigmoid(clean_x)
+        return clean_x
+
+
+class MultiplyDespeckle(nn.Module):
+    """Residual block with multiplication."""
+
+    def __init__(self, n_layers=6, n_filters=64,
+                 kernel_size=3, apply_sigmoid=True):
+        super(MultiplyDespeckle, self).__init__()
+        conv = BasicConv(in_channels=1, n_layers=n_layers,
+	                 n_filters=n_filters,
+                         kernel_size=kernel_size)
+        self.remove_noise = ResModel(
+        	conv, skip_connection=lambda x, y: x * y)
+        self.apply_sigmoid = apply_sigmoid
+
+    def forward(self, x):
+        clean_x = self.remove_noise(x)
+        if self.apply_sigmoid:
+            return torch.sigmoid(clean_x)
+        return clean_x
+
+
+class DivideDespeckle(nn.Module):
+    """Residual block with division."""
+
+    def __init__(self, n_layers=6, n_filters=64,
+                 kernel_size=3, apply_sigmoid=True):
+        super(DivideDespeckle, self).__init__()
+        conv = BasicConv(in_channels=1, n_layers=n_layers,
+	                 n_filters=n_filters,
+                         kernel_size=kernel_size)
+        self.remove_noise = ResModel(
+            conv,
+            skip_connection=(lambda x, y:
+	                     x / (y + SAFE_DIV_EPSILON))
+        )
+        self.apply_sigmoid = apply_sigmoid
+
+    def forward(self, x):
+        clean_x = self.remove_noise(x)
+        if self.apply_sigmoid:
+            return torch.sigmoid(clean_x)
+        return clean_x
+\end{lstlisting}
+
+\subsubsection*{Stain models}\label{apendix:stain}
+CycleGAN models are based on the implemetation in\\
+\url{https://github.com/eriklindernoren/PyTorch-GAN}
+
+\begin{lstlisting}
+import torch.nn as nn
+import torch
+
+
+# encoder block
+class DownsamplingBlock(nn.Module):
+    """Returns downsampling module of each generator block.
+
+    conv + instance norm + relu
+    """
+    def __init__(self, in_features, out_features, normalize=True):
+        super(DownsamplingBlock, self).__init__()
+        layers = [nn.Conv2d(in_features, out_features, 3,
+                            stride=2, padding=1)
+                  ]
+        if normalize:
+            layers.append(nn.InstanceNorm2d(out_features))
+        layers.append(nn.LeakyReLU(0.2, inplace=True))
+        self.model = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.model(x)
+
+
+# decoder block
+class UpsamplingBlock(nn.Module):
+    """Returns UNet upsampling layers of each generator block.
+
+    transposed conv + instance norm + relu
+    """
+    def __init__(self, in_features, out_features,
+                 normalize=True):
+        super(UpsamplingBlock, self).__init__()
+        # multiply in_features by two because of
+	# concatenated channels.
+        layers = [nn.ConvTranspose2d(
+                      in_features * 2,
+		      out_features, 3,
+                      stride=2, padding=1,
+		      output_padding=1)
+                  ]
+        if normalize:
+            layers.append(nn.InstanceNorm2d(out_features))
+        layers.append(nn.LeakyReLU(0.2, inplace=True))
+        self.model = nn.Sequential(*layers)
+
+    def forward(self, x1, x2):
+        x = torch.cat((x1, x2), dim=1)
+        return self.model(x)
+
+
+# ResNet block
+class ResidualBlock(nn.Module):
+    def __init__(self, in_features):
+        super(ResidualBlock, self).__init__()
+
+        conv_block = [nn.ReflectionPad2d(1),
+                      nn.Conv2d(in_features, in_features, 3),
+                      nn.InstanceNorm2d(in_features),
+                      nn.ReLU(inplace=True),
+                      nn.ReflectionPad2d(1),
+                      nn.Conv2d(in_features, in_features, 3),
+                      nn.InstanceNorm2d(in_features)]
+
+        self.conv_block = nn.Sequential(*conv_block)
+
+    def forward(self, x):
+        return x + self.conv_block(x)
+
+
+##############################
+#        Generators
+##############################
+
+class AffineGenerator(nn.Module):
+    """Affine transform generator implemented as a
+    single layer 1x1 conv layer."""
+
+    def __init__(self, input_nc, output_nc):
+        super().__init__()
+        self.model = nn.Conv2d(input_nc, output_nc, 1)
+
+    def forward(self, x):
+        x = self.model(x)
+        return x
+
+
+class GeneratorResNet(nn.Module):
+    def __init__(self, in_channels=3, out_channels=3,
+                 res_blocks=9):
+        super(GeneratorResNet, self).__init__()
+
+        # Initial convolution block
+        model = [nn.ReflectionPad2d(3),
+                 nn.Conv2d(in_channels, 64, 7),
+                 nn.InstanceNorm2d(64),
+                 nn.ReLU(inplace=True)]
+
+        # Downsampling
+        in_features = 64
+        out_features = in_features * 2
+        for _ in range(2):
+            model += [nn.Conv2d(in_features, out_features, 3,
+	                        stride=2, padding=1),
+                      nn.InstanceNorm2d(out_features),
+                      nn.ReLU(inplace=True)]
+            in_features = out_features
+            out_features = in_features * 2
+
+        # Residual blocks
+        for _ in range(res_blocks):
+            model += [ResidualBlock(in_features)]
+
+        # Upsampling
+        out_features = in_features // 2
+        for _ in range(2):
+            model += [nn.ConvTranspose2d(in_features,
+	                                 out_features,
+					 3, stride=2,
+					 padding=1,
+					 output_padding=1),
+                      nn.InstanceNorm2d(out_features),
+                      nn.ReLU(inplace=True)]
+            in_features = out_features
+            out_features = in_features // 2
+
+        # Output layer
+        model += [nn.ReflectionPad2d(3),
+                  nn.Conv2d(64, out_channels, 7),
+                  nn.Tanh()]
+
+        self.model = nn.Sequential(*model)
+
+    def forward(self, x):
+        return self.model(x)
+
+
+class GeneratorUNet(nn.Module):
+    def __init__(self, in_channels=3, out_channels=3,
+                 num_down=2):
+        super(GeneratorUNet, self).__init__()
+        self.num_down = num_down
+        self.down_activations = {}
+
+        def get_activation(name):
+            def hook(model, input, output):
+                self.down_activations[name] = output
+            return hook
+
+        # Initial convolution block
+        self.first = nn.Sequential(nn.ReflectionPad2d(3),
+                                   nn.Conv2d(in_channels,64,7),
+                                   nn.InstanceNorm2d(64),
+                                   nn.ReLU(inplace=True))
+
+        # Downsampling
+        down_layers = []
+        in_features = 64
+        out_features = in_features * 2
+        for i in range(self.num_down):
+            down_layers.append(
+                DownsamplingBlock(
+		    in_features,
+		    out_features)
+		.register_forward_hook( get_activation(i)))
+            in_features = out_features
+            out_features = in_features * 2
+        self.down_layers = nn.Sequential(*down_layers)
+
+        # Middle
+        self.middle = nn.Sequential(
+	    nn.Conv2d(in_features, in_features,
+                      3),
+            nn.InstanceNorm2d(in_features),
+            nn.LeakyReLU(0.2, inplace=True)
+	)
+
+        # Upsampling
+        up_layers = []
+        out_features = in_features // 2
+        for _ in range(self.num_down):
+            up_layers.append(UpsamplingBlock(in_features,
+	                                     out_features))
+            in_features = out_features
+            out_features = in_features // 2
+        self.up_layers = nn.Sequential(*up_layers)
+
+        # Output layer
+        self.last = nn.Sequential(nn.ReflectionPad2d(3),
+                                  nn.Conv2d(64,out_channels,7),
+                                  nn.Tanh())
+
+    def forward(self, x):
+        out_first = self.first(x)
+        out_encoder = self.down_layers(out_first)
+        out_middle = self.middle(out_encoder)
+        for i, decoder_layer in enumerate(self.up_layers):
+            if i == 0:
+                out = decoder_layer(
+                   self.down_activations[self.num_down-1-i],
+		   out_middle)
+            else:
+                out = decoder_layer(
+                   self.down_activations[self.num_down-1-i],
+		   out)
+
+        return self.last(out)
+
+
+##############################
+#        Discriminator
+##############################
+
+class Discriminator(nn.Module):
+    def __init__(self, in_channels=3, discriminator_blocks=4):
+        super(Discriminator, self).__init__()
+
+        def discriminator_block(in_filters, out_filters,
+	                        normalize=True):
+            """Returns downsampling layers of each
+	    discriminator block."""
+            layers = [nn.Conv2d(in_filters,
+	                        out_filters,
+				4,
+				stride=2,
+				padding=1)]
+            if normalize:
+                layers.append(nn.InstanceNorm2d(out_filters))
+            layers.append(nn.LeakyReLU(0.2, inplace=True))
+            return layers
+
+        n_filters = 64
+        blocks = discriminator_block(in_channels, n_filters,
+	                             normalize=False)
+        for _ in range(discriminator_blocks - 1):
+            blocks += discriminator_block(n_filters,
+	                                  n_filters * 2)
+            n_filters *= 2
+
+        self.model = nn.Sequential(
+            *blocks,
+            nn.ZeroPad2d((1, 0, 1, 0)),
+            nn.Conv2d(n_filters, 1, 4, padding=1)
+        )
+
+    def forward(self, img):
+        return self.model(img)
+
+\end{lstlisting}
+\end{document}
