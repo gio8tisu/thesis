@@ -4,31 +4,31 @@
 \subsection{Artificial Neural Networks}
 \label{sec:artificial-neural-networks}
 
-\gls{ann} were originally developed as a mathematical model of the biological brain
+\glspl{ann} were originally developed as a mathematical model of the biological brain
 (\cite{McCulloch1943,Rosenblatt58theperceptron,Rumelhart1987}).
-Although \gls{ann} have little resemblance to real biological neurons, they are
+Although \glspl{ann} have little resemblance to real biological neurons, they are
 a powerful \gls{ml} tool and one of the most popular research topics in the last years.
 Nowadays, most researchers have shifted from the prespective of the biological
 neuron model to a more general \emph{function approximator} point of view;
-in fact, it was proved that \gls{ann} with enough capacity are capable of
+in fact, it was proved that \glspl{ann} with enough capacity are capable of
 approximating any measurable function to any desired degree of accuracy
 (\cite{Cybenko1989,Hornik1991251}); this is, however, a non-constructive proof.
 
-The basic structure of \gls{ann} is a network of nodes (usually called neurons)
+The basic structure of an \gls{ann} is a network of nodes (usually called neurons)
 joined to each other by weighted connections.
-Many varieties of \gls{ann} have appeared over the years with different properties.
-One important distinction is between \gls{ann} whose connections form
+Many varieties of \glspl{ann} have appeared over the years with different properties.
+One important distinction is between \glspl{ann} whose connections form
 feedback loops, and those whose connections are acyclic.
-\gls{ann} with cycles are typically referred to as recurrent neural networks
-and those without cycles are known as \gls{fnn}.
+\glspl{ann} with cycles are typically referred to as recurrent neural networks
+and those without cycles are known as \glspl{fnn}.
 
-In this work, only \gls{fnn} are used, in particular, a special kind that makes
-use of the convolution operation called \gls{cnn}.
+In this work, only \glspl{fnn} are used, in particular, a special kind that makes
+use of the convolution operation called \glspl{cnn}.
 The following section provides an overview of this networks as well as the
 basic principles of training them.
 
-\subsubsection{Convolutional Neural Networks (CNN)}
-\gls{cnn} are a kind of \gls{ann} particulary well-suited for computer vision
+\subsubsection{Convolutional Neural Networks}
+\glspl{cnn} are a kind of \glspl{ann} particulary well-suited for computer vision
 tasks. They were first introduced in \cite{LeCun1998} to perform the task of
 hand-written digit classification and later popularized by \cite{Krizhevsky2012}
 entry on the ImageNet Large Scale Visual Recognition Challenge 2012
@@ -41,7 +41,7 @@ of the large hand-labeled \href{http://image-net.org/}{ImageNet} dataset
 training. In the classification task, the algorithms are evaluated by the error
 rate in the test images presented with no initial annotation.}
 
-\gls{cnn} consist of an input and an output layer, as well as multiple hidden
+A \gls{cnn} consist of an input and an output layer, as well as multiple hidden
 layers (see figure \ref{fig:alexnet}). The input layer contains the data
 (e.g., RGB image) with minimal preprocessing (normalization, cropping...),
 in contrast to other \gls{ml} algorithms that need hand-engineered features.
@@ -94,7 +94,7 @@ projected down to pixel space using the ``deconvolutional'' network introduced i
 \label{fig:cnn-visualization}
 \end{figure}
 
-\subsubsection{Training \gls{ann}}\label{sec:optimizers}
+\subsubsection{Training artificial neural networks}\label{sec:optimizers}
 Finding (or learning) the best set of parameters ($\theta$) (weights, filters,
 ...) of a network for a given problem can be posed as an optimization problem by
 defining an appropiate objective function ($\mathcal{J}$).
@@ -106,13 +106,13 @@ inputs (\textbf{X}) and targets (\textbf{Y}) is available:
 \left( (\tensor{X}, \tensor{Y}), f_{\theta} \right)
 \end{equation}
 
-The complex structure of \gls{ann} makes this optimization problem non-convex,
+The complex structure of \glspl{ann} makes this optimization problem non-convex,
 hence iterative methods are used for moving towards an optimum solution;
 particulary, gradient descent based are the most common type as the networks
 are ---by construction--- fully-differentiable.
 
 The idea behind gradient descent is simple. Given a (random) initial value
-for the input variables (e.g., filter coefficients in the case of \gls{cnn}),
+for the input variables (e.g., filter coefficients in the case of \glspl{cnn}),
 these are updated by moving towards the direction with greater slope
 i.e., the gradient. Moving towards the direction of the gradient (gradient
 ascent) will yield a local maximum, useful when maximizing the objective
@@ -130,16 +130,16 @@ learning rate but also by the magnitute of the gradient.
 
 In a \gls{dnn} with thousands or millions of parameters, computing the gradient
 with respect to each parameter independently is computationally restrictive.
-In \cite{backprop} work, an algorithm to efficiently train \gls{ann}
+In \cite{backprop} work, an algorithm to efficiently train \glspl{ann}
 called backpropagation\footnotemark{}  which uses the principles of dynamic
 programming and exploits the chain rule was presented and it is how almost
-all \gls{ann} are trained nowadays.
+all \glspl{ann} are trained nowadays.
 \footnotetext{This lead to the terminology of forward pass, when the output of
 the model is computed sequentially from the input layer through each of the
-hidden layers, and the backward pass, when the partial derivatives a computed
+hidden layers; and the backward pass, when the partial derivatives a computed
 starting from the final layer and going back to the first hidden layer.}
 
-\paragraph{Cost function} When training \gls{ann}, the objective function is
+\paragraph{Cost function} When training \glspl{ann}, the objective function is
 commonly defined as a cost function with two parts: the expected value of a
 loss plus a (weighted) regularization term.
 
@@ -177,7 +177,7 @@ mathematical description of some problems is not always straightforward.
 
 \paragraph{Advanced gradient-based optimization methods}
 The basic (stochastic/mini-batch) gradient descent methods tend to find bad
-sub-optima when dealing with the noisy, non-convex landscape of \gls{ann};
+sub-optima when dealing with the noisy, non-convex landscape of \glspl{ann};
 with a performance very sensitive to the initial values, learning rate and
 batch size.
 Many research work
@@ -235,7 +235,7 @@ that are common in stochatic optimization (specially with a small batch size).
 In \gls{ml} generative models are ones which model the distribution of the data.
 This models can be used to perform classification through the conditional
 distribution (via a prior distribution of the classes) or to sample/generate
-data. Multiple generative models have been proposed that make use of \gls{dnn}
+data. Multiple generative models have been proposed that make use of \glspl{dnn}
 (\cite{Hinton2009,Kingma2013,Goodfellow2014}), \gls{gans} in particular have
 gained a lot of attention as they are capable of generating realistic images.
 
@@ -243,7 +243,7 @@ gained a lot of attention as they are capable of generating realistic images.
 process, in which two models are trained: a generative model ($G$) that captures
 the data distribution, and a discriminative model ($D$).
 
-Both models are implemented as \gls{dnn} (usually \gls{cnn} in the case of
+Both models are implemented as \glspl{dnn} (usually \glspl{cnn} in the case of
 image data). $G_{\theta_g}(\tensor{z})$ maps from an input space of noise
 variables with distribution $p_z(\tensor{z})$ to data space.
 $D_{\theta_d}(\tensor{x})$ outputs the

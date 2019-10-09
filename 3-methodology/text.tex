@@ -82,7 +82,7 @@ naturally contaminated \gls{rcm}, the experiments on this work are based on the
 gamma model \eqref{eq:gamma-distribution}.
 
 \subsubsection{Proposed network architectures}
-In order to filter the speckle noise, several \gls{dnn} with the same basic
+In order to filter the speckle noise, several \glspl{dnn} with the same basic
 structure are defined. Inspired by the ResNet (\cite{he2015deep}) they all share a
 \emph{skip connection} between the first and last layer of a \gls{cnn} similar to
 \cite{Wang2018} approach for SAR imaging despeckling.
@@ -100,7 +100,7 @@ the different variations are precisely defined by it.}
 \end{figure}
 
 The \gls{cnn} block consists of $M$ convolutional layers each with $K$ filters
-of size $N \times N$ and parametric \gls{relu} activation functions
+of size $N \times N$ and parametric \glspl{relu} activation functions
 (\cite{he2015delving}),
 except for the last layer which has one $1 \times 1$ filter to ``merge'' all
 the channels of the previous layer into a single channel image.
