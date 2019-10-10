@@ -128,8 +128,8 @@ where the superscript $(n)$ denotes the $n$-th iteration step and $\mu$
 steps. Note that the length of the ``step'' is not only governed by the
 learning rate but also by the magnitute of the gradient.
 
-In a \gls{dnn} with thousands or millions of parameters, computing the gradient
-with respect to each parameter independently is computationally restrictive.
+In a \gls{dnn} with thousands or millions of parameters, computing the partial
+derivative with respect to each parameter independently is computationally restrictive.
 In \cite{backprop} work, an algorithm to efficiently train \glspl{ann}
 called backpropagation\footnotemark{}  which uses the principles of dynamic
 programming and exploits the chain rule was presented and it is how almost
@@ -222,15 +222,15 @@ a coefficient of $1 - \beta_1$ (equation \ref{eq:adam-m}) and the exponential
 moving average of the squared gradient ($\hat{v}$) with a coefficient of
 $1 - \beta_2$ (equation \ref{eq:adam-v}).
 The $\beta$'s are refered to as momentum an typical values lie
-around 0.9. $\epsilon$ is a very small constant (e.g, $10^{-8}$) to avoid
-division by zero.
+around 0.9. $\epsilon$ is a small constant (e.g, $10^{-8}$) to provide numerical
+stability when $\hat{v}_i$ is small.
 The intuition behind this update rule is that the steps are forced
 to be of size $\mu$, as we are dividing by the magnitude of the gradient; and
 instead of taking the direction of the gradient at a given iteration step, the
 gradient value is passed through a low-pass filter to avoid making sudden changes
 that are common in stochatic optimization (specially with a small batch size).
 
-\subsection{Generative Adversarial Networks (GANs)}
+\subsection{Generative Adversarial Networks}
 
 In \gls{ml} generative models are ones which model the distribution of the data.
 This models can be used to perform classification through the conditional
@@ -244,7 +244,7 @@ process, in which two models are trained: a generative model ($G$) that captures
 the data distribution, and a discriminative model ($D$).
 
 Both models are implemented as \glspl{dnn} (usually \glspl{cnn} in the case of
-image data). $G_{\theta_g}(\tensor{z})$ maps from an input space of noise
+image data). $G_{\theta_g}(\tensor{z})$ maps from an input space of random
 variables with distribution $p_z(\tensor{z})$ to data space.
 $D_{\theta_d}(\tensor{x})$ outputs the
 probability that $\tensor{x}$ came from the data distribution
@@ -266,7 +266,7 @@ L_G = \log(1 - D(G(\tensor{z})))
 \begin{equation}\label{eq:discriminator}
 L_D =
   \begin{cases}
-    - \log(D(\tensor{x}), & \tensor{x} \sim p_{data} \\
+    - \log(D(\tensor{x})), & \tensor{x} \sim p_{data} \\
     - \log(1 - D(\tensor{x})) \equiv - \log(1 - D(G(\tensor{z}))),
     & \tensor{x} \sim p_g
   \end{cases}
@@ -287,7 +287,7 @@ i.e. $D(x) = 0.5$.
 \begin{figure}[H]
 \centering
 \includegraphics[width=.7\linewidth]{GAN-diagram}
-\caption{\gls{gans} training process diagram}
+\caption{Adversarial training process diagram}
 \label{fig:gan-diagram}
 \end{figure}
 
@@ -303,9 +303,9 @@ to a number of problems known as \emph{failure modes}:
 
 A number of publications
 (\cite{Arjovsky2017,miyato2018spectral,DBLP:journals/corr/SalimansGZCRC16})
-tackle this problems with architecture and loss function modifications, and
-practical techniques.
-Successfuly tranined generators, generate
+tackle this problems with architecture and loss function modifications, as well as
+practical ``tricks''.
+Successfully tranined generators, generate
 very realistic samples as the constructed objective function essentially says
 ``generate samples that look realistic''.
 

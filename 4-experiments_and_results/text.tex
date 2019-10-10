@@ -22,8 +22,7 @@ function (represented in figure \ref{fig:gan-poc-generator}).
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.4\linewidth]{gan-poc-generator}
-\caption{Generator architecture used for both the \gls{mse} and \gls{gans}
-setting}
+\caption{Generator architecture used for both the MSE and GANs setting}
 \label{fig:gan-poc-generator}
 \end{figure}
 
@@ -41,7 +40,7 @@ the sample diverges from a normal distribution to an extent unlikely to arise
 merely by chance.  It is computed
 using the \url{https://www.socscistatistics.com/tests/kolmogorov} online tool.}.
 
-\subsubsection{Results for \gls{mse} loss}
+\subsubsection{Results for mean square error loss}
 As to be expected, the \gls{ann} simply ignores the source of randomness
 (set first layer's weights close to zero) and produces an almost deterministic
 output close to the distribution's expected value: this is in fact the optimal
@@ -77,7 +76,7 @@ with a sigmoid activation function in the output layer.
 \centering
 \includegraphics[width=0.4\linewidth]{gan-poc-discriminator}
 \caption{Discriminator architecture}
-\label{fig:fig:gan-poc-generator}
+\label{fig:gan-poc-discriminator}
 \end{figure}
 
 In the case of the generator network traned in an adversarial manner,
@@ -99,7 +98,7 @@ were necessary.
 \centering
 \includegraphics[width=0.5\linewidth]{gan-poc}
 \caption{In blue a plot of the kernel density estimation using 1000
-samples from the generator trained through the \gls{gans} framework.
+samples from the generator trained through the GANs framework.
 In red the probability density function of a normal random variable.}
 \label{fig:gan-poc}
 \end{figure}
@@ -146,7 +145,7 @@ it fails to find any solution close to the desired.
 \begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=.8\linewidth]{divide-denoised}
-  \caption{Example of denoised \gls{fcm}}
+  \caption{Example of denoised FCM with division skip connection}
   \label{fig:divide-denoised}
 \end{subfigure}
 \caption{The division skip-connection model fails to converge.}
@@ -166,17 +165,48 @@ Model & $M$ & $K$ & $N$ & mean $SSIM_{output}$ \\
 \midrule
 Multiply ($L = 1$) & 3 & 32 & 5 & 0.877 \\
 Multiply ($L = 1$) & 5 & 64 & 5 & 0.728 \\
+Multiply ($L = 5$) & 3 & 32 & 5 & 0.960 \\
 Multiply ($L = 5$) & 5 & 64 & 5 & 0.947 \\
+
 Log-Add ($L = 1$) & 3 & 32 & 5 & 0.960 \\
 Log-Add ($L = 1$) & 5 & 64 & 5 & 0.806 \\
+Log-Add ($L = 5$) & 3 & 32 & 5 & 0.968 \\
 Log-Add ($L = 5$) & 5 & 64 & 5 & 0.965 \\
 \bottomrule
 \end{tabular}
 \caption{Models comparison with different number of layers $M$, number
 of filters $K$ and filter size $N$. The validation set mean $SSIM_{input}$
-is 0.414 for $L=1$ and 0.723 for $L=5$}
+is 0.414 for $L=1$ and 0.723 for $L=5$.}
 \label{tab:despeckling}
 \end{table}
+
+Removing the speckle noise in the log space obtains better results in all
+the cases from a \gls{ssim} point of view, specially when the noise is
+more prominent ($L = 1$) the difference is more notable.
+
+Although a good \gls{ssim} is obtained when compating a noise-free \gls{fcm}
+and its denoised version; when applying the DespeckleNN to a \gls{rcm} images,
+the result looks unrealistic (see figure \ref{fig:denoised-R}).
+For this reason, the following StainNN experiments are carried out without the
+despeckling stage.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{noisy-R}
+  \caption{RCM crop with speckle noise}
+  \label{fig:noisy-R}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{denoised-R}
+  \caption{RCM crop denoised with DespeckleNN}
+  \label{fig:denoised-R}
+\end{subfigure}
+\caption{Example of DespeckleNN applied to RCM images}
+\label{}
+\end{figure}
 
 \subsection{Staining network}
 \subsubsection{Baseline}
@@ -194,21 +224,29 @@ The final results are very similar to the ones of the initial state,
 (see figure \ref{fig:stain-baseline})
 so the model makes no real progress to make a better looking stain version.
 
-\begin{figure}
+Once again, the \gls{gans} unstability becomes apparent when training this model.
+Multiple hyperparameter combinations lead to failed cases (see example in figure
+\ref{fig:failed-baseline}).
+
+\begin{figure}[p]
 \centering
-\includegraphics[width=0.4\linewidth]{stain-baseline}
+\begin{subfigure}{.5\textwidth}
+\centering
+\includegraphics[width=0.8\linewidth]{stain-baseline}
 \caption{Example of a crop stained by the baseline model}
 \label{fig:stain-baseline}
-\end{figure}
-
-\subsubsection{Advanced \glspl{dnn}}
-
-\begin{figure}
+\end{subfigure}
+\begin{subfigure}{.5\textwidth}
 \centering
-\includegraphics[width=0.4\linewidth]{1038_real_A}
-\caption{}
-\label{}
+\includegraphics[width=0.8\linewidth]{failed-baseline}
+\caption{Example of a crop stained by the failed training baseline model}
+\label{fig:failed-baseline}
+\end{subfigure}
+\caption{Examples of stained CM using StainNN baseline model}
+\label{fig:baseline-examples}
 \end{figure}
+
+\subsubsection{Deep staining networks}
 
 The two architectures are trained using the hyperparameters described
 in table \ref{tab:hyperparameters} 
