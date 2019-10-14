@@ -1,6 +1,53 @@
 \documentclass[../main.tex]{subfiles}
 \begin{document}
 
-\lipsum[1]
+The use of the \gls{cyclegans} framework for digitally staining \gls{cm} slides
+has been studied, as well as fully-convolutional models for speckle denoising.
 
+This work supplements the one by \cite{Combalia2019} mainly with three
+contributions:
+\begin{enumerate*}[label=\arabic*)]
+\item A way of measuring StainNN hallucinations is studied;
+\item Different inference techniques for whole slides are developed and compared
+and
+\item Use of a Unet-like architecture for the StainNN which is able to more
+accurately transform the structures from the source without creating new ones.
+\end{enumerate*}
+
+The denoising model seems to work from a \gls{ssim} point of view, but based on
+visual inpection the results are not satisfactory. The cause may be the
+training images, as they are from a different character ---\gls{fcm} instead
+of \gls{rcm}--- and the noise model used to contaminate the images
+may not be accurate.
+
+In the case of the staining model, the UNet-like architecture is superior to the
+residual one based on both the \gls{lbp} histogram distance and \gls{ssim}; but,
+as Dr. Pérez mentions, it is essential to make sure the structures are always
+preserved.
+
+\subsection{Future development}
+
+To tackle the main problem of the StainNN (nuclei elimination), a new model
+should be trained with a loss that further penalizes this kind of behavior.
+Maybe ``showing'' both the input and output to the discriminator could work,
+or just by trying higher $\lambda_{cycle}$ or $\lambda_{identity}$ values
+the model could learn to be more conservative.
+
+The applied StainNN architectures have a large number of parameters, reducing
+the number of parameters could make the transformation less prone to
+hallucinations and would reduce inference time and memory.
+Therefore, as a future development, finding a model that matches or improves
+the performace of the presented models but using less parameters would
+be beneficial.
+
+The speckle noise model was selected based on similar works, a validation of
+different noise models should be done to see which one applies better to this
+problem. Also related to the speckle noise, a measure of how the denoising model
+affects final transformation should be done.
+
+Finally, the inference model could be further improved. As it can be seen in
+figures \ref{fig:inference-comparison-scan0} and
+\ref{fig:inference-comparison-scan3}, the edges are degraded; this is due to
+the shape of the window, applying a special case window shape for the edges
+and corners this would be solved.
 \end{document}

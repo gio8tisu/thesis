@@ -34,12 +34,59 @@ Verónica Vilaplana
 \thispagestyle{empty}
 \null\newpage
 
+\pagenumbering{roman}
+
 \section*{Abstract}
-\lipsum[1]
+Confocal microscopy is a technology that enables pathologists the rapid
+analysis of tissue samples for carcinoma detection.
+However, this technology hasn't established yet in the standard clinical
+practice because most pathologists lack the knowledge to interpret its output.
+
+To address this problem, a data-driven method for transforming confocal
+micrographs into
+more familiar looking hematoxylin and eosin like images is presented and
+evaluated, enabling
+pathologists to interpret these images without specific training.
+
+The main obstacle for defining such transformation is the absence of
+paired data confocal and hematoxylin and eosin images needed by traditional
+machine learning frameworks.
+To overcome this issue, the cycle-consistent generative adversarial networks
+framework is used.
+This framework introduces specific problems like unstable training and structure
+``hallucinations'' or elimination which this work tries to quantify and mitigate.
+
+\thispagestyle{empty}
+
+\section*{Resumen}
+La microscopía confocal es una tecnología que permite a los patólogos el análisis rápido de muestras de tejido para la detección de carcinomas. Sin embargo, esta tecnología aún no se ha establecido en la práctica clínica estándar porque la mayoría de los patólogos carecen del conocimiento para interpretar su salida.
+
+Para abordar este problema, se presenta y evalúa un método basado en datos para transformar las micrografías confocales en imágenes parecidas a hematoxilina y eosina de aspecto más familiar, lo que permite a los patólogos interpretar estas imágenes sin formación específica.
+
+El principal obstáculo para definir dicha transformación es la ausencia de datos confocales emparejados con imágenes de hematoxilina y eosina que necesitan los marcos tradicionales de aprendizaje automático. Para superar este problema, se utiliza el marco de redes generativas antagónicas de ciclo consistente.
+Este marco presenta problemas específicos como el entrenamiento inestable y la ``alucinación'' o eliminación de estructuras que este trabajo intenta cuantificar y mitigar.
+
+\thispagestyle{empty}
+
+\section*{Resum}
+La microscòpia confocal és una tecnologia que permet als patòlegs l'anàlisi ràpida de mostres de teixit per a la detecció de carcinomes. No obstant això, aquesta tecnologia encara no s'ha establert en la pràctica clínica estàndard perquè la majoria dels patòlegs no tenen el coneixement per interpretar la seva sortida.
+
+Per abordar aquest problema, es presenta i avalua un mètode basat en dades per transformar les micrografies confocals en imatges semblants a hematoxilina i eosina d'aspecte més familiar, el que permet als patòlegs interpretar aquestes imatges sense formació específica.
+
+El principal obstacle per a definir aquesta transformació és l'absència de dades confocals aparellats amb imatges d'hematoxilina i eosina que necessiten els marcs tradicionals d'aprenentatge automàtic. Per superar aquest problema, s'utilitza el marc de xarxes generatives antagòniques de cicle consistent.
+Aquest marc presenta problemes específics com l'entrenament inestable i la ``al·lucinació'' o eliminació d'estructures que aquest treball intenta quantificar i mitigar.
+
 \thispagestyle{empty}
 
 \section*{Acknowledgments}
-\lipsum[1]
+I would like to express my gratitude to my advisor Prof. Verónica
+Vilaplana for her guidance, motivation and immense knowledge.
+I would also like to acknowledge Marc Combalia for his help and advices,
+which have been a great support to carry out this project.
+
+Last but not least, I want to give special thanks to  Raquel as well as my family
+and friends for always being there.
+
 \thispagestyle{empty}
 
 \section*{Revision history and approval record}
@@ -52,6 +99,9 @@ Revision & Date & Purpose \\
 1 & October 1, 2019 & Document revision \\
 2 & October 5, 2019 & Document modification \\
 3 & October 6, 2019 & Document revision \\
+4 & October 11, 2019 & Document modification \\
+5 & October 12, 2019 & Document revision and correction\\
+6 & October 14, 2019 & Document approval\\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -71,7 +121,7 @@ Verónica Vilaplana Besler & \url{veronica.vilaplana@upc.edu} \\
 \begin{tabular}{*4c}
 \toprule
 \multicolumn{2}{c}{Written by} & \multicolumn{2}{c}{Reviewed and approved by}\\
-Date & October 5, 2019 & Date & October 6, 2019 \\
+Date & October 14, 2019 & Date & October 14, 2019 \\
 \midrule
 Name & Sergio García Campderrich & Name & Verónica Vilaplana Besler \\
 Position & Project author & Position & Project supervisior \\
@@ -79,23 +129,17 @@ Position & Project author & Position & Project supervisior \\
 \end{tabular}
 \end{center}
 
-\thispagestyle{empty}
-
 %% Table of contents page
 \tableofcontents
-\thispagestyle{empty}
 
 %% List of figures page
 \listoffigures
-\thispagestyle{empty}
 
 %% List of tables page
 \listoftables
-\thispagestyle{empty}
 
 %% List of acronyms page
 \printglossary[type=\acronymtype,title=Acronyms]
-\thispagestyle{empty}
 
 %% Beginning
 \newpage
@@ -126,8 +170,18 @@ Position & Project author & Position & Project supervisior \\
 \section*{Appendices}
 \addcontentsline{toc}{section}{Appendices}
 \renewcommand{\thesubsection}{\Alph{subsection}}
+
+\subsection{Examples of failure cases provided by professional}%
+\label{sec:examples}
+\subfile{7-appendixes/A-additional_results.tex}
+
 \subsection{Work plan}
 \subfile{7-appendixes/B-work_plan.tex}
+
+\subsection{Whole slides samples}\label{sec:wholeslides}
+\subfile{7-appendixes/C-wholeslides.tex}
+
 \subsection{PyTorch implementations}
 \subfile{7-appendixes/D-code_implementations.tex}
+
 \end{document}

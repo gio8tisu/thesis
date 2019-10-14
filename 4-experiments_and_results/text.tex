@@ -79,8 +79,8 @@ with a sigmoid activation function in the output layer.
 \label{fig:gan-poc-discriminator}
 \end{figure}
 
-In the case of the generator network traned in an adversarial manner,
-it produces samples with variability that are close to normally disributed
+In the case of the generator network trained in an adversarial manner,
+it produces samples with variability that are close to being normally disributed
 (see figure \ref{fig:gan-poc} for a visual comparison with a true normal
 distribution).
 
@@ -89,10 +89,11 @@ The p-value is 0.87045. This provides good evidence that the data does
 not differ significantly from that which is normally distributed.
 
 This model clearly beats the \gls{mse} one on producing realistic and varied
-samples, but the training was much more unstable and the problem of mode
-collapse was encountered. Several training iterations with different
+samples, but the training was much more sesitive to hyperparameters
+and the problem of mode collapse was encountered.
+Several training iterations with different
 hyperparameters (like number of layers, activation functions, learning rate,...)
-were necessary.
+were necessary until the desired results were obtained.
 
 \begin{figure}[h]
 \centering
@@ -149,7 +150,6 @@ it fails to find any solution close to the desired.
   \label{fig:divide-denoised}
 \end{subfigure}
 \caption{The division skip-connection model fails to converge.}
-\label{fig:hallucination}
 \end{figure}
 
 In table \ref{tab:despeckling} the mean SSIM values on the validation set
@@ -182,9 +182,13 @@ is 0.414 for $L=1$ and 0.723 for $L=5$.}
 
 Removing the speckle noise in the log space obtains better results in all
 the cases from a \gls{ssim} point of view, specially when the noise is
-more prominent ($L = 1$) the difference is more notable.
+more prominent ($L = 1$) the difference is more notable. The versions with
+less parameters ($M=3$ and $K=32$) obtain a slightly higher $SSIM_{output}$,
+this can be an example of the degradation problem although, if trained for more
+epochs, with different inicialization or learning rate, the higher capacity
+networks would probably match the shallower ones.
 
-Although a good \gls{ssim} is obtained when compating a noise-free \gls{fcm}
+Albeit a good \gls{ssim} is obtained when compating a noise-free \gls{fcm}
 and its denoised version; when applying the DespeckleNN to a \gls{rcm} images,
 the result looks unrealistic (see figure \ref{fig:denoised-R}).
 For this reason, the following StainNN experiments are carried out without the
@@ -201,7 +205,8 @@ despeckling stage.
 \begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=.8\linewidth]{denoised-R}
-  \caption{RCM crop denoised with DespeckleNN}
+  \caption{RCM crop denoised with DespeckleNN (model with highest $SSIM_{output}$
+  in table \ref{tab:despeckling})}
   \label{fig:denoised-R}
 \end{subfigure}
 \caption{Example of DespeckleNN applied to RCM images}
@@ -232,12 +237,14 @@ Multiple hyperparameter combinations lead to failed cases (see example in figure
 \centering
 \begin{subfigure}{.5\textwidth}
 \centering
+\captionsetup{width=.8\linewidth}
 \includegraphics[width=0.8\linewidth]{stain-baseline}
 \caption{Example of a crop stained by the baseline model}
 \label{fig:stain-baseline}
-\end{subfigure}
+\end{subfigure}%
 \begin{subfigure}{.5\textwidth}
 \centering
+\captionsetup{width=.8\linewidth}
 \includegraphics[width=0.8\linewidth]{failed-baseline}
 \caption{Example of a crop stained by the failed training baseline model}
 \label{fig:failed-baseline}
@@ -246,24 +253,14 @@ Multiple hyperparameter combinations lead to failed cases (see example in figure
 \label{fig:baseline-examples}
 \end{figure}
 
-\subsubsection{Deep staining networks}
+\subsubsection{Deep staining networks}\label{sec:deep-stain}
 
 The two architectures are trained using the hyperparameters described
-in table \ref{tab:hyperparameters} 
-for tand instead of optimizing the
-original GAN objective
+in table \ref{tab:hyperparameters}.
+Instead of optimizing the original \gls{gans} objective
 the so-called LSGAN ---use the L2 distance instead of the cross-entropy---
 is used which is empirically shown to provide a more
 stable training (\cite{lsgan}).
-
-In theory the UNet-like model shoud mantain the structure and be less prone
-to ``hallucinate'', in practice this generally holds but still some structures
-are made up by the model; the residual model on the other hand sometimes
-eliminates nuclei present in the source image. Both cases can be seen in figure
-\ref{fig:resnet-unet}.
-
-The mean value of the \gls{lbp} histogram distance for the validation
-set is 0.0332 for the residual model and 0.0183 for the unet.
 
 \begin{table}
 \centering
@@ -286,24 +283,50 @@ residual blocks (residual model) & 9 \\
 \label{tab:hyperparameters}
 \end{table}
 
-\begin{figure}[h]
+In theory the UNet-like model shoud mantain the structure and be less prone
+to ``hallucinate'', in practice this generally holds but still some structures
+are made up by the model; the residual model on the other hand sometimes
+eliminates nuclei present in the source image. Both cases can be seen in figure
+\ref{fig:resnet-unet}.
+
+The mean value of the \gls{lbp} histogram distance  and \gls{ssim} on the
+validation set for the residual and Unet-like architectres are shown in table
+\ref{tab:validation-stain}.
+
+\begin{table}
+\centering
+\begin{tabular}{l|cc}
+\toprule
+Metric & Residual & UNet-like \\
+\midrule
+LBP histogram chi-squared distance & 0.0332 & 0.0183 \\
+SSIM & 0.5002 & 0.5570 \\
+\bottomrule
+\end{tabular}
+\caption{Metrics mean values on validation set for the two tested models.}
+\label{tab:validation-stain}
+\end{table}
+
+\begin{figure}[H]
 \centering
 \begin{subfigure}{.5\textwidth}
   \centering
-  \includegraphics[width=.8\linewidth]{104_real_A}
+  \includegraphics[width=.7\linewidth]{104_real_A}
   \caption{Real}
   \label{fig:real-example}
 \end{subfigure}
 \begin{subfigure}{.5\textwidth}
   \centering
-  \includegraphics[width=.8\linewidth]{104_fake_B-resnet}
-  \caption{Residual network}
+  \captionsetup{width=.8\linewidth}
+  \includegraphics[width=.7\linewidth]{104_fake_B-resnet}
+  \caption{Residual network: $SSIM=0.5850$, $LBP_{dist}=0.0286$}
   \label{fig:resnet-example}
 \end{subfigure}%
 \begin{subfigure}{.5\textwidth}
   \centering
-  \includegraphics[width=.8\linewidth]{104_fake_B-unet}
-  \caption{UNet-like}
+  \captionsetup{width=.8\linewidth}
+  \includegraphics[width=.7\linewidth]{104_fake_B-unet}
+  \caption{UNet-like: $SSIM=0.6753$, $LBP_{dist}=0.0127$}
   \label{fig:unet-example}
 \end{subfigure}
 \caption{(a) is the models' input, the second row show the outputs for the
@@ -313,33 +336,78 @@ generated that are not present in the input ---marked in red---.}
 \label{fig:resnet-unet}
 \end{figure}
 
-\subsection{Inference method}
-The 2 of th inference methods described in section \ref{sec:inference} are
+\subsection{Inference method}\label{sec:experiments-inference}
+Three of the inference methods described in section \ref{sec:inference} are
 compared by
 computing the mean chi-squared distance of $512 \times 512$ patches 
-in 7 large slides,
-i.e.: from a \gls{cm} large mosaic, the digitally stained
-version by \cite{Gareau2009} is computed (DSCM), the selected inference method
+in 7 large slides.
+The procedure is the following: from a \gls{cm} large slide,
+the digitally stained version by \cite{Gareau2009} is computed (DSCM).
+Then, the selected inference method
 is used to produce the \gls{he} version using the U-Net model and the DSCM
-as input, then these are divided with a grid of $512 \times 512$ cells and the
-\gls{lbp} histogram is computed on each cell, once the histograms are computed
-the chi-squared distance is used to measure how similar each cell is.
+as input; next, the DSCM and the transformed version are divided with a grid of
+$512 \times 512$ cells and the
+\gls{lbp} histogram is computed on each cell. Finally, once the histograms are
+computed, the \gls{ssim} and chi-squared distance are used to measure how similar
+each cell is between the DSCM and the transformed version.
 
-The plot in figure \ref{fig:inference-comparison} shows how the method using
-50\% overlap and the weight metrix defined in \ref{} has a lower distribution
-of the metric for 7 different samples.
+The plots in figure \ref{fig:inference-comparison} show how the method using
+50\% overlap and the weight metrix defined in \ref{def:pyramid} has a lower
+distribution of the texture metric and higher distribution of the similarity
+metric for 7 different samples. Two of the samples are displayed in annex
+\ref{sec:wholeslides}.
 
 \begin{figure}
 \centering
-\includegraphics[width=0.6\linewidth]{inference-boxplot}
+\begin{subfigure}{.8\textwidth}
+\centering
+\includegraphics[width=0.9\linewidth]{inference-boxplot-lbp}
+\caption{LBP histogram chi-squared distance (the smaller the better).
+The distributions for the pyramid method tend to be in a lower range and
+have less variability. Scan 3 stands out for being in a higher range; this is
+probabilty because it contains more backgroud, where the model tend to
+hallucinate.}
+\label{fig:inference-lbp-comparison}
+\end{subfigure}
+\begin{subfigure}{.8\textwidth}
+\centering
+\includegraphics[width=0.9\linewidth]{inference-boxplot-ssim}
+\caption{SSIM (the greater the better). In this plots it can be visualized how
+this metric has more variability than the LBP histogram distance. The pyramid
+tiling distributions in particular has a higher variability compared to the
+other ones, but the general ditribution is always higher.}
+\label{fig:inference-ssim-comparison}
+\end{subfigure}
 \caption{Independent tiling refers to inference made tile-by-tile with no overlap
 whatsoever. No-overlap refers to the technique where the inputs have overlap but
 the output is cropped so that they do not overlap. Pyramid is the WSI inference
-technique from \cite{Bel2019}.}
+technique from \cite{Bel2019}. (\ref{def:pyramid} in page \pageref{def:pyramid})}
 \label{fig:inference-comparison}
 \end{figure}
 
-% \subsubsection{Histology Professionals Validation}
-% \lipsum[3]
+\subsection{Professional analysis}
+
+Evaluation from Dr. María Javiera Pérez from the \gls{hc}'s melanoma unit,
+expert in Mohs surgery and Melanoma,
+in response to a request for an assessment of whole slides transformed with the
+final model (translated from spanish):
+
+\begin{displayquote}
+Observing the images, it is intuited that they have been obtained from digitally
+stained \gls{cm} and haven't been adequately transformed to its equivalent
+conventional \gls{he} image. Nuclei are not clearly displayed due to this problem.
+
+The color tone, both for the stroma, and for the nuclei when they appear, is
+very correct.
+But now we must definitely improve that the structures are always visualized.
+\end{displayquote}
+
+The expert is able to detect missing nuclei in the resulting transformation,
+a problem mentioned section \ref{sec:deep-stain}.
+Apart from that, she points out the accurate color tones for various
+tissue structures.
+
+Two examples provided by the doctor with their respective descriptions are
+appended in \ref{sec:examples}.
 
 \end{document}

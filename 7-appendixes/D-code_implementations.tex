@@ -393,8 +393,8 @@ import torchvision.transforms.functional as TF
 
 
 class VirtualStainer:
-    """Class for digitally staining CM to H&E histology
-    using Daniel S. Gareau technique."""
+    """Class for digitally staining CM using
+       Daniel S. Gareau technique."""
 
     H = [0.30, 0.20, 1]
     one_minus_H = list(map(lambda x: 1 - x, H))

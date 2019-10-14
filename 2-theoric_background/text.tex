@@ -224,7 +224,7 @@ $1 - \beta_2$ (equation \ref{eq:adam-v}).
 The $\beta$'s are refered to as momentum an typical values lie
 around 0.9. $\epsilon$ is a small constant (e.g, $10^{-8}$) to provide numerical
 stability when $\hat{v}_i$ is small.
-The intuition behind this update rule is that the steps are forced
+The intuition behind this update rule is that the steps for each parameter are forced
 to be of size $\mu$, as we are dividing by the magnitude of the gradient; and
 instead of taking the direction of the gradient at a given iteration step, the
 gradient value is passed through a low-pass filter to avoid making sudden changes
@@ -305,7 +305,7 @@ A number of publications
 (\cite{Arjovsky2017,miyato2018spectral,DBLP:journals/corr/SalimansGZCRC16})
 tackle this problems with architecture and loss function modifications, as well as
 practical ``tricks''.
-Successfully tranined generators, generate
+Successfully tranined generators generate
 very realistic samples as the constructed objective function essentially says
 ``generate samples that look realistic''.
 
@@ -327,13 +327,14 @@ with no information provided as to which $\tensor{x}_i$ matches which
 $\tensor{y}_i$ (if any).
 
 \paragraph{Pix2Pix}
-\cite{Isola2016} work presents a conditional adversarial setting and applies it
-successfully to a variety of image-to-image translation problems that
+\parencite{Isola2016} work presents a conditional adversarial setting and applies
+it successfully to a variety of image-to-image translation problems that
 traditionally would require very different loss formulations; proving that
 \emph{learned loss functions} are versatile.
 The losses used are similar to the ones in equations \eqref{eq:generator} and
 \eqref{eq:discriminator}; but the discriminator not only gets the output of
-the generator as input, but the corresponing input as well
+the generator as input, but the corresponing input as well ---generator's input
+and output are concatenated in the channels dimension---
 (see figure \ref{fig:pix2pix} extracted from \cite{Isola2016}).
 Apart from that, the generator is tasked to also be
 near the ground truth in a L1 sense; this is done by modifying the generator's
@@ -342,7 +343,8 @@ loss function:
 L_G = \log(1 - D(\tensor{x}, G(\tensor{x}))) +
 \lambda \left\| \tensor{y} - G(\tensor{x}) \right\|_1
 \end{equation}
-\begin{figure}[t]
+
+\begin{figure}[H]
 \centering
 \includegraphics[width=.7\linewidth]{pix2pix-diagram}
 \caption{Training a conditional GAN to map edges to photo.
@@ -354,7 +356,7 @@ input edge map.}
 \end{figure}
 
 \paragraph{CycleGAN}
-\cite{Zhu2017a} presents a method that builds on top of the Pix2Pix framework
+\parencite{Zhu2017a} presents a method that builds on top of the Pix2Pix framework
 for capturing special characteristics of one
 image collection and transfering these into another image collection in the
 absence of any paired training examples.
@@ -399,7 +401,8 @@ L_{\cycleGAN{Y}{X}} = &\log(1 - D_X(\cycleGAN{Y}{X}(\tensor{y}))) \\
 \end{split}
 \end{equation}
 \end{subequations}
-\begin{figure}[b]
+
+\begin{figure}[H]
 \centering
 \includegraphics[width=.8\linewidth]{cyclegan-diagram}
 \caption{(Extracted from \cite{Zhu2017a}) The mapping model denoted as $\cycleGAN{X}{Y}$ in this work is is
