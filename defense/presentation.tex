@@ -1,0 +1,190 @@
+\documentclass{beamer}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+\usetheme{simple}
+
+\usepackage{lmodern}
+\usepackage[scale=2]{ccicons}
+
+\setwatermark{\includegraphics[height=8cm]{../images/logo_telecos_2018-simple_bw.png}}
+
+\title{Data-driven Confocal Microscopy to Hematoxylin and Eosin Transformation}
+\subtitle{}
+\date{\today}
+\author{Sergio García Campderrich}
+%\institute{Universitat Politècnica de Catalunya}
+
+\begin{document}
+\maketitle
+
+\begin{frame}
+\frametitle{Contents}
+
+\begin{itemize}
+\item Introduction\pause
+\item Theoric background\pause
+\item Methodology\pause
+\item Experiments and results\pause
+\item Conclusions and future development
+\end{itemize}
+
+\end{frame}
+
+
+\AtBeginSection[]
+  {
+     \begin{frame}<beamer>
+     \tableofcontents[currentsection]
+     \end{frame}
+  }
+
+\section{Introduction}
+
+% La microscopía confocal es una tecnología que permite a los patólogos el análisis rápido de muestras de tejido para la detección de carcinomas. Sin embargo, esta tecnología aún no se ha establecido en la práctica clínica estándar porque la mayoría de los patólogos carecen del conocimiento para interpretar su salida.
+
+\subsection{Hematoxylin and Eosin (H\&E)}
+
+\begin{frame}
+\frametitle{What is it?}
+\end{frame}
+
+\subsection{Confocal microscopy}
+
+\begin{frame}
+\frametitle{What is it?}
+\end{frame}
+
+\begin{frame}
+\frametitle{Similarities with H\&E}
+\end{frame}
+
+\begin{frame}
+\frametitle{Modes}
+% Provide examples
+\end{frame}
+
+\subsection{Data-driven transformation}
+
+% Para abordar este problema, se presenta y evalúa un método basado en datos para transformar las micrografías confocales en imágenes parecidas a hematoxilina y eosina de aspecto más familiar, lo que permite a los patólogos interpretar estas imágenes sin formación específica.
+
+\begin{frame}
+\frametitle{Why?}
+% Most doctors don't understand them (image of confused doctor)
+% Training experts is expensive.
+
+\end{frame}
+
+\begin{frame}
+% El principal obstáculo para definir dicha transformación es la ausencia de datos confocales emparejados con imágenes de hematoxilina y eosina que necesitan los marcos tradicionales de aprendizaje automático. Para superar este problema, se utiliza el marco de redes generativas antagónicas de ciclo consistente.
+% Este marco presenta problemas específicos como el entrenamiento inestable y la ``alucinación'' o eliminación de estructuras que este trabajo intenta cuantificar y mitigar.
+
+\frametitle{How?}
+% Difficulties (no paired data).
+\end{frame}
+
+
+\section{Theoric background}
+
+\begin{frame}
+\frametitle{Convolutional neural networks (CNNs)}
+% Quick and simple visual explanation.
+\end{frame}
+
+\begin{frame}
+\frametitle{Generative adversarial networks (GANs)}
+% Quick and simple visual explanation.
+\end{frame}
+
+\begin{frame}
+\frametitle{Cicle-consistent GANs (CycleGANs)}
+% Quick and simple visual explanation.
+\end{frame}
+
+
+\section{Methodology}
+
+\subsection{Datasets}
+
+\begin{frame}
+\frametitle{Confocal dataset}
+\end{frame}
+
+\begin{frame}
+\frametitle{H\&E}
+\end{frame}
+
+\subsection{Despeckling}
+
+\begin{frame}
+\frametitle{Speckle noise}
+\end{frame}
+
+\begin{frame}
+\frametitle{Despeckling network}
+\end{frame}
+
+\subsection{Stain}
+
+\begin{frame}
+\frametitle{Residual network}
+% Diagram
+\end{frame}
+
+\begin{frame}
+\frametitle{UNet-like network}
+% Diagram
+\end{frame}
+
+\subsection{Inference technique}
+
+\begin{frame}
+\frametitle{Why?}
+% Example of "naive" approach
+\end{frame}
+
+\begin{frame}
+\frametitle{"no-overlap" method}
+% Diagram
+\end{frame}
+
+\begin{frame}
+\frametitle{"pyramid" method}
+% Diagram
+\end{frame}
+
+
+\section{Experiments and results}
+
+\subsection{Despeckling}
+
+\begin{frame}
+\frametitle{Experiments}
+\end{frame}
+
+\begin{frame}
+\frametitle{Results}
+\end{frame}
+
+\subsection{Stain}
+
+\begin{frame}
+\frametitle{Experiments}
+\end{frame}
+
+\begin{frame}
+\frametitle{Results}
+\end{frame}
+
+\subsection{Inference technique}
+
+\begin{frame}
+\frametitle{Experiments}
+\end{frame}
+
+\begin{frame}
+\frametitle{Results}
+\end{frame}
+
+\end{document}
