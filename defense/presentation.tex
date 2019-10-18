@@ -2,6 +2,7 @@
 
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 
 \usetheme{metropolis}
 
@@ -10,9 +11,9 @@
 
 \title{Data-driven Confocal Microscopy to Hematoxylin and Eosin Transformation}
 \subtitle{}
-\date{\today}
 \author{Sergio García Campderrich}
 %\institute{Universitat Politècnica de Catalunya}
+\date{\today}
 
 \begin{document}
 \maketitle
@@ -55,7 +56,24 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Similarities with H\&E}
+\frametitle{Similarities and dissimilarities with H\&E}
+    \begin{block}{Similarities}<1>
+    {
+        \begin{itemize}
+        \item item 1
+        \item item 2
+        \end{itemize}
+    }
+    \end{block}\pause
+    \begin{alertblock}{Dissimilarities}<2>
+    {
+        \begin{itemize}
+        \item item 1
+        \item item 2
+        \end{itemize}
+    }
+    \end{alertblock}
+
 \end{frame}
 
 \begin{frame}
@@ -79,16 +97,31 @@
 % Este marco presenta problemas específicos como el entrenamiento inestable y la ``alucinación'' o eliminación de estructuras que este trabajo intenta cuantificar y mitigar.
 
 \frametitle{How?}
+% Through a ML model. CNNs in particular.
 % Difficulties (no paired data).
 \end{frame}
 
 
 \section{Theoric background}
 
+\subsection{Artificial neural networks}
+
 \begin{frame}
 \frametitle{Convolutional neural networks (CNNs)}
 % Quick and simple visual explanation.
+% Fast way to apply a LINEAR TRANSLATION-INVARIANT transformation.
+% Achieve non linearity by stacking layers by non linear activation in-between.
 \end{frame}
+
+\begin{frame}
+\frametitle{Training}
+% Differenctiable by construction.
+% Define an objective function a use gradient descent.
+% Mention backpropagation algorithm.
+% Defining an objective function for our problem is difficult (unpaired data)
+\end{frame}
+
+\subsection{Generative models}
 
 \begin{frame}
 \frametitle{Generative adversarial networks (GANs)}
@@ -107,20 +140,27 @@
 
 \begin{frame}
 \frametitle{Confocal dataset}
+% Ejemplos de whole slide confocal
 \end{frame}
 
 \begin{frame}
 \frametitle{H\&E}
+% Ejemplos whole slide H&E
 \end{frame}
 
 \subsection{Despeckling}
 
 \begin{frame}
 \frametitle{Speckle noise}
+% Que es?
+% Modelo de ruido
+% Ejemplo del dataset
 \end{frame}
 
 \begin{frame}
 \frametitle{Despeckling network}
+% Diagrama
+% Distintos tipos
 \end{frame}
 
 \subsection{Stain}
@@ -152,6 +192,18 @@
 % Diagram
 \end{frame}
 
+\subsection{Quality measure}
+
+\begin{frame}
+\frametitle{SSIM}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{LBP}
+% Diagrama del los 8 puntos (mirar explicacion computerphile)
+\end{frame}
+
 
 \section{Experiments and results}
 
@@ -159,30 +211,41 @@
 
 \begin{frame}
 \frametitle{Experiments}
+% Set-up
 \end{frame}
 
 \begin{frame}
 \frametitle{Results}
+% Learning curves...
+% Ejemplos resultados...
 \end{frame}
 
 \subsection{Stain}
 
 \begin{frame}
 \frametitle{Experiments}
+% set-up
 \end{frame}
 
 \begin{frame}
 \frametitle{Results}
+% Learning curves...
+% Ejemplos de transformacion a lo largo del entrenamiento
+% Ejemplos resultados...
 \end{frame}
 
 \subsection{Inference technique}
 
 \begin{frame}
 \frametitle{Experiments}
+% Se transforman 7 whole slides...
+% Mostrar (algunos) ejemplos
 \end{frame}
 
 \begin{frame}
 \frametitle{Results}
+% Mostrar ejemplos transformados
+% Box plots
 \end{frame}
 
 \end{document}
