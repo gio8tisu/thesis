@@ -3,12 +3,10 @@
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 
-\usetheme{simple}
+\usetheme{metropolis}
 
 \usepackage{lmodern}
 \usepackage[scale=2]{ccicons}
-
-\setwatermark{\includegraphics[height=8cm]{../images/logo_telecos_2018-simple_bw.png}}
 
 \title{Data-driven Confocal Microscopy to Hematoxylin and Eosin Transformation}
 \subtitle{}
@@ -33,10 +31,10 @@
 \end{frame}
 
 
-\AtBeginSection[]
+\AtBeginSubsection[]
   {
      \begin{frame}<beamer>
-     \tableofcontents[currentsection]
+     \tableofcontents[currentsubsection,sections=\thesection]
      \end{frame}
   }
 
