@@ -18,6 +18,8 @@
     linkcolor=black,
     urlcolor=blue
 }
+\usepackage{array}
+\usepackage{booktabs}
 
 \usetheme{metropolis}
 
@@ -123,22 +125,22 @@ It is able to capture multiple two-dimensional images at different depths in a s
 
 \begin{figure}
 \centering
-     \only<2>{
+     \only<1>{
      \includegraphics[scale=0.1]{CM-process-1-1}\hspace{0.1\textwidth}%
      \includegraphics[scale=0.1]{CM-process-1-2}
      \caption{\footnotemark{}The light beam is focused by a pinhole on a small part of the sample}
      }
-     \only<3>{
+     \only<2>{
      \includegraphics[scale=0.1]{CM-process-2-1}\hspace{0.1\textwidth}%
      \includegraphics[scale=0.1]{CM-process-2-2}
      \caption{\footnotemark{}If fluorosphores are present, they emit light}
      }
-     \only<4>{
+     \only<3>{
      \includegraphics[scale=0.1]{CM-process-3-1}\hspace{0.1\textwidth}%
      \includegraphics[scale=0.1]{CM-process-3-2}
      \caption{\footnotemark{}The surface is scanned by moving the sample/light beam}
      }
-     \only<5>{
+     \only<4>{
      \includegraphics[scale=0.1]{CM-process-4-1}\hspace{0.1\textwidth}%
      \includegraphics[scale=0.1]{CM-process-4-2}
      \caption{\footnotemark{}One can move vertically to obtain images at different heights}
@@ -174,7 +176,7 @@ It is able to capture multiple two-dimensional images at different depths in a s
 
 \begin{frame}{Modes}
 
-In addition to ``standard'' reflection mode, CM can make use of fluorescent mode for specimens stained with fluorochromes.
+In addition to ``standard'' reflection mode, CM can work in fluorescent mode for specimens stained with fluorochromes.
 
 \only<1>{
 \begin{columns}
@@ -212,7 +214,7 @@ In addition to ``standard'' reflection mode, CM can make use of fluorescent mode
 \begin{figure}
 \centering
 \includegraphics[width=0.9\textwidth]{CM-pseudocolor}
-\caption{Pseudocolor/falsecolor H\&E-like from reflectance and fluorescence modes}
+\caption{Pseudocolor/falsecolor H\&E-like digital stain from reflectance and fluorescence modes}
 \end{figure}
 \end{column}
 \end{columns}
@@ -290,24 +292,27 @@ Different structures should be mapped to different colours even if the pixel val
 
 \begin{columns}
 
-\begin{column}{0.5\textwidth}
+\begin{column}{0.6\textwidth}
+\only<2->{
 \begin{block}{Solution}
 \begin{itemize}
-\item<1-> Data driven approach to try to find a better transformation
-\item<2-> Convolutional neural network are good at \emph{learning} non-linear mappings
+\item<2-> Data driven approach to try to find a better transformation
+\item<3-> CNNs are good at \emph{learning} non-linear mappings
+\item<5-> Use CycleGANs framework
 \end{itemize}
 \end{block}
+}
 \end{column}
 
-\begin{column}{0.5\textwidth}
-\begin{alertblock}{Problem}
+\begin{column}{0.4\textwidth}
+\only<4->{
+\begin{alertblock}{But}
 \begin{itemize}
-\item<3-> Traditional solutions would require pairs of CM and H\&E slides, which would be very difficult
-\item<4-> Use of CycleGANs framework
+\item Traditional solutions require pairs of CM and H\&E slides, which would be very difficult
 \end{itemize}
 \end{alertblock}
+}
 \end{column}
-
 
 \end{columns}
 
@@ -365,19 +370,11 @@ Neural networks are fully differentiable by construction, so we can use gradient
 \end{block}\pause
 
 \begin{alertblock}{But}
-Defining an objective function for our problem is straightforawrd.
+Defining an objective function for our problem is straightforward.
 
 We want to \emph{generate} images that \emph{look like} H\&E and are \emph{realistic}.
-\end{alertblock}\pause
+\end{alertblock}
 
-\begin{block}{Typically}
-The objective function is defined as the expected value of a loss function that is applied to
-a single data point
-\[
-\mathcal{J}\left( (\tensor{X}, \tensor{Y}), f_{\theta} \right) =
-\mathbb{E}\{ \mathcal{L} \left( f_{\theta}(\tensor{X}), \tensor{Y} \right) \}
-\]
-\end{block}
 \end{frame}
 
 \subsection{Generative models}
@@ -396,18 +393,10 @@ the data distribution, and a discriminative model $D$.
 \]
 \end{block}\pause
 
-\begin{block}{Loss functions}
-\[
-\mathcal{L}_G = \log(1 - D(G(\tensor{z})))
-\]
-
-$$
-\mathcal{L}_D =
-  \begin{cases}
-    - \log(D(\tensor{x})), & \tensor{x} \sim p_{data} \\
-    - \log(1 - D(\tensor{x})), & \tensor{x} \sim p_g
-  \end{cases}
-$$
+\begin{block}{Intuitively}
+Two models ``fight'' one against the other (over the discriminator's loss)
+in such a way that they improve each other, until the generator's samples are
+indistiguishable from data.
 \end{block}
 
 \end{frame}
@@ -468,8 +457,7 @@ $ \cycleGAN{Y}{X}(\cycleGAN{X}{Y}(\tensor{x})) \approx \tensor{x} $.
 
 \end{frame}
 
-\begin{frame}
-\frametitle{Cicle-consistent GANs (CycleGANs)}
+\begin{frame}{Cycle-consistent GANs (CycleGANs)}
 
 \only<1->{
 \begin{block}{Two pairs of generator-discriminator are trained}
@@ -491,6 +479,7 @@ $ \cycleGAN{Y}{X}(\cycleGAN{X}{Y}(\tensor{x})) \approx \tensor{x} $.
 \end{column}
 
 \begin{column}{0.6\textwidth}
+Modified loss for $\cycleGAN{X}{Y}$ (analogous for $\cycleGAN{Y}{X}$):
 \[
 \begin{split}
 \mathcal{L}_{\cycleGAN{X}{Y}} = &\log(1 - D_Y(\cycleGAN{X}{Y}(\tensor{x}))) \\
@@ -508,125 +497,433 @@ $ \cycleGAN{Y}{X}(\cycleGAN{X}{Y}(\tensor{x})) \approx \tensor{x} $.
 
 \section{Methodology}
 
-\subsection{Datasets}
-
-\begin{frame}
-\frametitle{Confocal dataset}
-% Ejemplos de whole slide confocal
-\end{frame}
-
-\begin{frame}
-\frametitle{H\&E}
-% Ejemplos whole slide H&E
-\end{frame}
-
 \subsection{Despeckling}
 
-\begin{frame}
-\frametitle{Speckle noise}
+\begin{frame}{Speckle noise}
 % Que es?
 % Modelo de ruido
 % Ejemplo del dataset
+The reflectance CM image is corrupted by speckle:\\
+Scattered signals add constructively and destructively depending on the relative phases of each scattered waveform.
+Speckle results from these patterns of constructive and destructive interference shown as bright and dark dots in the image.
+
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{speckle-1}
+\caption{Example of speckled RCM image}
+\end{figure}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\only<2->{
+\begin{block}{Speckle model}
+\[ Y = X \odot F \]
+\[ F \sim \Gamma(k = L, \theta = \frac{1}{L}) \]
+\end{block}
+}
+\end{column}
+
+\end{columns}
+
 \end{frame}
 
-\begin{frame}
-\frametitle{Despeckling network}
-% Diagrama
-% Distintos tipos
+\begin{frame}{Despeckling network}
+A CNN is used to filter speckle noise prior to the stain transformation.\pause
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{despeckling-nn_multiplicative}
+\caption{Model with multiplicative skip-connection}
+\end{figure}\pause
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{despeckling-nn_additive}
+\caption{Model with additive skip-connection}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Training}
+
+\begin{block}{Loss}
+The models are trained using the MSE loss:
+\[ \mathcal{L} = \left\| \tensor{x}_{clean} - f_{\theta}(\tensor{x}_{noisy}) \right\|_2 \]
+\end{block}\pause
+
+\begin{block}{Data}
+Due to the impossibility to obtain the noisy and clean versions of the the RCM images,
+artificially contaminated FCM images are used to obtain the ($\tensor{x}_{clean}$, $\tensor{x}_{noisy}$) pairs.
+\end{block}
+\begin{figure}
+\centering
+\includegraphics[width=0.2\textwidth]{9_768-6912_F-thumbnail}\hspace{0.15\textwidth}%
+\includegraphics[width=0.2\textwidth]{9_768-6912_F-thumbnail_noisy}
+\end{figure}
+
 \end{frame}
 
 \subsection{Stain}
 
-\begin{frame}
-\frametitle{Residual network}
-% Diagram
+\begin{frame}{Generators' architecture}
+Both families follow an encoder-decoder
+structure, i.e.: a series of convolution layers with down-sampling (encoder)
+followed by the same number of layers with up-sampling\footnotemark{} (decoder),
+presumably the encoder maps the input into a latent representation where
+semantic transformations can be more easily defined and then the decoder
+``brings'' it back to the image space.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.6\textwidth]{encoder-decoder}
+\caption{\href{https://arxiv.org/abs/1511.00561}{image credits}}
+\end{figure}
+
 \end{frame}
 
-\begin{frame}
-\frametitle{UNet-like network}
-% Diagram
+\begin{frame}{Residual network}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.9\textwidth]{residual_stain-nn}
+\end{figure}
+
+In a residual block, intead of trying to learn
+a transformation $\mathcal{T}(\tensor{x})$, the residual
+$\mathcal{F}(\tensor{x})$ is learnt so that
+$\mathcal{T}(\tensor{x}) = \mathcal{F}(\tensor{x}) + \tensor{x}$
+the motivation behind this is to
+avoid the problem know as the degradation problem where deeper networks
+perform worse than shallower counterparts, when in theory they should at
+least perfom equally well.
+
+\end{frame}
+
+\begin{frame}{UNet-like network}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.9\textwidth]{unet_stain-nn}
+\end{figure}
+
+As a means to obtain low-level information
+(location, texture, ...) from the encoder,
+the output from the corresponding encoder layer is concatenated to the output
+of the previous decoder layer.
+
 \end{frame}
 
 \subsection{Inference technique}
 
-\begin{frame}
-\frametitle{Why?}
-% Example of "naive" approach
+\begin{frame}{Why?}
+\begin{block}{Need}
+Whole slide images are too large to fit directly on a GPU, therefore,
+the inference has to be tile-by-tile to obtain the stain transformed result.
+\end{block}\pause
+
+\begin{alertblock}{Problem}
+This introduces artifacts between adjacent tiles in the output due to
+instance normalization relying on tile statistics.
+\end{alertblock}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.3\linewidth]{tiling-example}
+\end{figure}
+
 \end{frame}
 
-\begin{frame}
-\frametitle{"no-overlap" method}
-% Diagram
+\begin{frame}{Method I}
+\begin{figure}
+\centering
+\includegraphics[width=0.3\linewidth]{no-overlap}
+\caption{The tiles predictions share context but the outputs do not overlap.}
+\end{figure}
 \end{frame}
 
-\begin{frame}
-\frametitle{"pyramid" method}
-% Diagram
+\begin{frame}{Method I - Example}
+
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+\begin{figure}
+\centering
+\includegraphics[width=0.75\linewidth]{scan6-independent}
+\caption{Independent tile-by-tile inference}
+\end{figure}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{figure}
+\centering
+\includegraphics[width=0.75\linewidth]{scan6-no-overlap}
+\caption{Tile-by-tile inference using method I}
+\end{figure}
+\end{column}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Method II}
+
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+\begin{figure}
+\centering
+\includegraphics[width=0.8\linewidth]{pyramid}
+\caption{Shifting the window by quarter of its size creates an overlap between
+the tiles output.}
+\end{figure}\pause
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{figure}
+\centering
+\includegraphics[width=0.7\linewidth]{weights}
+\caption{Output is weighted by a ``pyramidal'' window.
+Therefore, each pixel value in the final transformation is a weighted sum of 4 predictions.}
+\end{figure}
+\end{column}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Method II - Example}
+
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+\begin{figure}
+\centering
+\includegraphics[width=0.75\linewidth]{scan6-independent}
+\caption{Independent tile-by-tile inference}
+\end{figure}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{figure}
+\centering
+\includegraphics[width=0.75\linewidth]{scan6-pyramid}
+\caption{Tile-by-tile inference using method II}
+\end{figure}
+\end{column}
+
+\end{columns}
+
 \end{frame}
 
 \subsection{Quality measure}
 
-\begin{frame}
-\frametitle{SSIM}
+\begin{frame}{Hallucinations}
+Two metrics are used to try to measure if the generated
+samples contain structures that are not present in the source image
+(popularly known as hallucinations). The metrics are based on comparing
+the generated image with the equivalent linear staining image (both in gray-scale).
+
+\begin{figure}
+\centering
+\includegraphics[width=0.3\textwidth]{epoch246_real_A}\hspace{0.15\textwidth}%
+\includegraphics[width=0.3\textwidth]{epoch246_fake_B}
+\caption{An example of an hallucination}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Metrics}
+
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+\begin{block}{SSIM}
+To validate the structure integrity of the transformed wholeslides, the
+SSIM metric is used.
+SSIM is a perception-based model that considers image degradation as
+perceived change in structural information.
+\end{block}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+
+\begin{block}{LBP histogram distance}
+Use the Local Binary Patterns (LBP) descriptor to measure the distance
+in a texture sense.
+\end{block}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.7\textwidth]{lbp}
+\caption{The distance between the result and source is measured using
+the chi-squared distance between the normalized LBP histograms}
+\end{figure}
+
+\end{column}
+
+\end{columns}
+
 \end{frame}
 
 
-\begin{frame}
-\frametitle{LBP}
-% Diagrama del los 8 puntos (mirar explicacion computerphile)
-\end{frame}
-
-
-\section{Experiments and results}
+\section{Results}
 
 \subsection{Despeckling}
 
-\begin{frame}
-\frametitle{Experiments}
-% Set-up
+\begin{frame}{Quantitative results}
+
+\begin{table}
+\centering
+\begin{tabular}{*5c}
+\toprule
+Model & $M$ & $K$ & $N$ & mean $SSIM$ \\
+\midrule
+Multiply ($L = 1$) & 3 & 32 & 5 & 0.877 \\
+Multiply ($L = 1$) & 5 & 64 & 5 & 0.728 \\
+Multiply ($L = 5$) & 3 & 32 & 5 & 0.960 \\
+Multiply ($L = 5$) & 5 & 64 & 5 & 0.947 \\
+
+Log-Add ($L = 1$) & 3 & 32 & 5 & 0.960 \\
+Log-Add ($L = 1$) & 5 & 64 & 5 & 0.806 \\
+Log-Add ($L = 5$) & 3 & 32 & 5 & 0.968 \\
+Log-Add ($L = 5$) & 5 & 64 & 5 & 0.965 \\
+\bottomrule
+\end{tabular}
+\caption{Models comparison with different number of layers $M$, number
+of filters $K$ and filter size $N$. The validation set mean $SSIM_{input}$
+is 0.414 for $L=1$ and 0.723 for $L=5$.}
+\end{table}
+
 \end{frame}
 
-\begin{frame}
-\frametitle{Results}
-% Learning curves...
-% Ejemplos resultados...
+\begin{frame}{Qualitative results}
+
+Good SSIM is obtained when comparing a noise-free FCM and its denoised version;
+but when applying the DespeckleNN to RCM images,
+the result looks noisier.
+
+\begin{figure}
+\centering
+\includegraphics[width=.3\linewidth]{noisy-R}\hspace{0.15\textwidth}%
+\includegraphics[width=.3\linewidth]{denoised-R}
+\end{figure}
+
 \end{frame}
 
 \subsection{Stain}
 
-\begin{frame}
-\frametitle{Experiments}
-% set-up
+% TODO Ejemplos de transformacion a lo largo del entrenamiento
+
+\begin{frame}{Quantitative results}
+\begin{table}
+\centering
+\begin{tabular}{l|cc}
+\toprule
+Metric & Residual & UNet-like \\
+\midrule
+LBP histogram chi-squared distance & 0.0332 & 0.0183 \\
+SSIM & 0.5002 & 0.5570 \\
+\bottomrule
+\end{tabular}
+\caption{Metrics mean values on validation set for the two tested models.}
+\label{tab:validation-stain}
+\end{table}
 \end{frame}
 
-\begin{frame}
-\frametitle{Results}
-% Learning curves...
-% Ejemplos de transformacion a lo largo del entrenamiento
-% Ejemplos resultados...
+\begin{frame}{Qualitative results}
+
+\begin{columns}
+
+\begin{column}{0.6\textwidth}
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{104_real_A}\\
+\vfill
+\includegraphics[scale=0.3]{104_fake_B-resnet}\hspace{0.15\textwidth}%
+\includegraphics[scale=0.3]{104_fake_B-unet}
+\caption{(N) Linear stain (SW) Residual model stain (SE) Unet model stain}
+\end{figure}
+\end{column}
+
+\begin{column}{0.4\textwidth}
+The motivation behind using the UNet-like model is to mantain the structure,
+in practice this generally holds but still some structures
+are ``hallucinated'' and nuclei present in the source image are eliminated
+(evaluation supported by dermatology expert).
+\end{column}
+
+\end{columns}
+
 \end{frame}
 
 \subsection{Inference technique}
 
-\begin{frame}
-\frametitle{Experiments}
-% Se transforman 7 whole slides...
-% Mostrar (algunos) ejemplos
+\begin{frame}{Experiments}
+\begin{figure}
+\centering
+     \only<1>{
+     \includegraphics[width=0.8\textwidth]{inference-experiment-1}
+     \caption{7 whole slides are used to compute the metrics}
+     }
+     \only<2>{
+     \includegraphics[width=0.8\textwidth]{inference-experiment-2}
+     \caption{The corresponding linear stain and StainNN transformations (with different inference methods) are applied}
+     }
+     \only<3>{
+     \includegraphics[width=0.8\textwidth]{inference-experiment-3}
+     \caption{The metrics between the StainNN and linear versions are computed in 500x500 patches}
+     }
+\end{figure}
+
 \end{frame}
 
-\begin{frame}
-\frametitle{Results}
-% Mostrar ejemplos transformados
-% Box plots
+\begin{frame}{SSIM}
+\begin{figure}
+\centering
+\includegraphics[width=0.65\linewidth]{inference-boxplot-ssim}
+\caption{The pyramid
+tiling (method II) distributions in particular has a higher variability compared to the
+other ones, but the general ditribution is always higher.}
+\end{figure}
+\end{frame}
+
+\begin{frame}{LBP}
+\begin{figure}
+\centering
+\includegraphics[width=0.65\linewidth]{inference-boxplot-lbp}
+\caption{The distributions for the pyramid (method II) tend to be in a lower range and
+have less variability.}
+\end{figure}
 \end{frame}
 
 
 \section{Conclusions and future development}
 
 \begin{frame}{Conclusions}
+\begin{itemize}
+\item The use of the CycleGANs framework for digitally staining CM slides
+has been studied, as well as fully-convolutional models for speckle denoising.
+\item Different inference techniques for whole slides are developed and compared.
+\item A way of measuring StainNN hallucinations is studied.
+\item UNet-like architecture is superior to the
+residual one based on both the LBP and SSIM metrics, but
+still the structures are not always preserved.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Future development}
+\begin{enumerate}
+\item Find a way to train despeckling model that generalizes to RCM.
+\item A new stain model
+should be trained with a loss that further encourages structure integrity:
+\begin{itemize}
+\item Showing both the input and output to the discriminator.
+\item Modify the CycleGAN loss.
+\end{itemize}
+\end{enumerate}
 \end{frame}
 
 \end{document}
